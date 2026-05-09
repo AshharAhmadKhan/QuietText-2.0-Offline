@@ -1,0 +1,20 @@
+body.qt-mild,body.qt-comfort,body.qt-focus{font-family:OpenDyslexic,sans-serif !important}
+body.qt-mild{font-size:17px !important;line-height:1.6 !important;background-color:#F9F9F7 !important}
+body.qt-mild p,body.qt-mild h1,body.qt-mild h2,body.qt-mild h3,body.qt-mild h4,body.qt-mild li,body.qt-mild td,body.qt-mild span,body.qt-mild div,body.qt-mild article,body.qt-mild section{font-family:OpenDyslexic,sans-serif !important;font-size:17px !important;line-height:1.6 !important;letter-spacing:0.12em !important;word-spacing:0.16em !important}
+body.qt-comfort{font-size:19px !important;line-height:1.9 !important;background-color:#F2F0EB !important}
+body.qt-comfort p,body.qt-comfort h1,body.qt-comfort h2,body.qt-comfort h3,body.qt-comfort h4,body.qt-comfort li,body.qt-comfort td,body.qt-comfort span,body.qt-comfort div,body.qt-comfort article,body.qt-comfort section{font-family:OpenDyslexic,sans-serif !important;font-size:19px !important;line-height:1.9 !important;letter-spacing:0.12em !important;word-spacing:0.16em !important}
+body.qt-focus{font-size:21px !important;line-height:2.1 !important;background-color:#EBEBEB !important}
+body.qt-focus p,body.qt-focus h1,body.qt-focus h2,body.qt-focus h3,body.qt-focus h4,body.qt-focus li,body.qt-focus td,body.qt-focus span,body.qt-focus div,body.qt-focus article,body.qt-focus section{font-family:OpenDyslexic,sans-serif !important;font-size:21px !important;line-height:2.1 !important;letter-spacing:0.12em !important;word-spacing:0.16em !important}
+body.qt-mild code,body.qt-mild pre,body.qt-comfort code,body.qt-comfort pre,body.qt-focus code,body.qt-focus pre{font-family:monospace !important;letter-spacing:normal !important;word-spacing:normal !important}
+body.qt-mild img,body.qt-mild video,body.qt-comfort img,body.qt-comfort video,body.qt-focus img,body.qt-focus video{background-color:transparent !important}
+.qt-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#1C1C1E;color:#F2F0EB;padding:12px 20px;border-radius:8px;font-family:system-ui,sans-serif;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:2147483646;pointer-events:none;animation:qt-toast-in 0.3s cubic-bezier(0.16,1,0.3,1) forwards}
+@keyframes qt-toast-in{to{transform:translateX(-50%) translateY(0)}}
+.qt-highlight-tooltip{position:absolute;background:linear-gradient(135deg,#3d3428 0%,#5a4d3a 100%);color:#F2F0EB;padding:12px 16px;border-radius:10px;max-width:360px;min-width:200px;z-index:2147483645;box-shadow:0 6px 24px rgba(0,0,0,0.28);font-family:OpenDyslexic,sans-serif;font-size:13px;line-height:1.7;pointer-events:none;animation:qt-tooltip-in 0.2s cubic-bezier(0.16,1,0.3,1) both}
+@keyframes qt-tooltip-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.qt-highlight-tooltip::before{content:'';position:absolute;top:-6px;left:18px;width:12px;height:12px;background:#3d3428;transform:rotate(45deg);border-radius:2px}
+.qt-highlight-tooltip-text{margin-bottom:8px;word-break:break-word}
+.qt-tooltip-loading{display:flex;gap:5px;align-items:center;padding:2px 0}
+.qt-tooltip-loading span{width:7px;height:7px;background:#F2F0EB;border-radius:50%;opacity:0.4;animation:qt-dot-bounce 1.2s ease-in-out infinite}
+.qt-tooltip-loading span:nth-child(2){animation-delay:0.2s}
+.qt-tooltip-loading span:nth-child(3){animation-delay:0.4s}
+@keyframes qt-dot-bounce{0%,80%,100%{opacity:0.4;transform:scale(1)}40%{opacity:1;transform:scale(1.3)}}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>QuietText 2.0</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#1C1C1E}
+#qt-toolbar{height:36px;background:#1C1C1E;display:flex;align-items:center;justify-content:space-between;padding:0 14px;cursor:grab;user-select:none}
+#qt-toolbar span{color:#F2F0EB;font-size:12px;font-weight:700;font-family:system-ui,sans-serif;letter-spacing:0.06em}
+#qt-toolbar-right{display:flex;gap:8px;align-items:center}
+.qt-tb-btn{background:none;border:1px solid #3A3A3C;color:#6E6E73;font-size:11px;cursor:pointer;padding:3px 10px;border-radius:4px;font-family:system-ui,sans-serif;transition:all 0.15s}
+.qt-tb-btn:hover{background:#2C2C2E;color:#F2F0EB;border-color:#6E6E73}
+#qt-iframe-wrap{position:absolute;top:36px;left:0;right:0;bottom:0}
+#qt-iframe{width:100%;height:100%;border:none}
+</style>
+</head>
+<body>
+<div id="qt-toolbar">
+  <span>QuietText 2.0</span>
+  <div id="qt-toolbar-right">
+    <button class="qt-tb-btn" id="qt-open-tab">Full tab</button>
+    <button class="qt-tb-btn" id="qt-close">Close</button>
+  </div>
+</div>
+<div id="qt-iframe-wrap">
+  <iframe id="qt-iframe" src="https://quiettext.vercel.app/" allow="clipboard-write; microphone" title="QuietText 2.0"></iframe>
+</div>
+<script src="panel.js"></script>
+</body>
+</html>

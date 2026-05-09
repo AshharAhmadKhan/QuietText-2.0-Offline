@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>QuietText 2.0</title>
+<link rel="stylesheet" href="popup.css"/>
+</head>
+<body>
+<header class="qt-header">
+  <div class="qt-header-content" style="opacity:1;animation:none;">
+    <div class="qt-header-top-row">
+      <div class="qt-logo" style="opacity:1;animation:none;transform:none;">
+        <span class="qt-logo-text">QuietText 2.0</span>
+      </div>
+      <div class="qt-header-controls" style="opacity:1;animation:none;transform:none;">
+        <label class="qt-toggle" title="Enable or disable reading mode">
+          <input type="checkbox" id="masterToggle" aria-label="Toggle reading mode"/>
+          <span class="qt-toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#9a9a9f;font-style:italic;padding-left:2px;margin-top:4px;font-family:system-ui,sans-serif;">
+      Gemma 4 reads. Groq simplifies. You understand.
+    </p>
+  </div>
+</header>
+<div class="qt-tabs" role="tablist">
+  <button class="qt-tab active" id="tabPresets" role="tab">Presets</button>
+  <button class="qt-tab" id="tabHistory" role="tab">History</button>
+  <button class="qt-tab" id="tabSettings" role="tab">Settings</button>
+</div>
+<div class="qt-tab-content" id="panelPresets" role="tabpanel">
+  <p class="qt-section-label">Choose a reading style</p>
+  <div class="qt-preset-group">
+    <button class="qt-preset-btn" id="btn-mild"><span class="qt-preset-name">Mild</span><span class="qt-preset-desc">17px, subtle spacing</span></button>
+    <button class="qt-preset-btn" id="btn-comfort"><span class="qt-preset-name">Comfort</span><span class="qt-preset-desc">19px, relaxed reading</span></button>
+    <button class="qt-preset-btn" id="btn-focus"><span class="qt-preset-name">Focus</span><span class="qt-preset-desc">21px, maximum clarity</span></button>
+  </div>
+  <p class="qt-hint">Select text on any page, press <strong>Ctrl+Shift+Q</strong> or right-click and choose <strong>Simplify with QuietText 2.0</strong></p>
+  <button class="qt-open-btn" id="openAppBtn">Open QuietText 2.0</button>
+</div>
+<div class="qt-tab-content qt-hidden" id="panelHistory" role="tabpanel">
+  <p class="qt-section-label">Recent simplifications</p>
+  <div id="historyList" class="qt-history-list"></div>
+  <button class="qt-clear-btn" id="clearHistoryBtn">Clear History</button>
+</div>
+<div class="qt-tab-content qt-hidden" id="panelSettings" role="tabpanel">
+  <p class="qt-section-label">Groq API Key</p>
+  <p class="qt-hint">Get a free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a></p>
+  <div class="qt-key-row">
+    <input type="password" id="apiKeyInput" placeholder="gsk_..." class="qt-key-input"/>
+    <button class="qt-save-btn" id="saveKeyBtn">Save</button>
+  </div>
+  <p id="keyStatus" class="qt-key-status" role="status"></p>
+  <p class="qt-section-label" style="margin-top:16px;">Gemini Key</p>
+  <p class="qt-hint">Add your Gemini key inside the QuietText 2.0 app for images and PDFs.</p>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

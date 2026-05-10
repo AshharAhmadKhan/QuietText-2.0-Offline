@@ -151,6 +151,8 @@ Target reading level: ${level}.
 Use short sentences. Simple vocabulary. Clear structure.
 Return only the simplified text in ${lang}. Do not include English.`,
 
+  assignment: `You are a reading assistant helping a dyslexic student. Break the homework instructions into a numbered list of simple steps. Each step is ONE action only. Use simple words. Add time estimate in brackets like [about 5 minutes]. Return only the numbered steps.`,
+
   wordDefine: `Explain the following word or phrase in one simple sentence.
 Use plain everyday English. Return only the explanation.`,
 

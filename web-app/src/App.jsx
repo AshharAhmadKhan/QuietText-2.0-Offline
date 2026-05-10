@@ -7,6 +7,7 @@ import MetricsChart from './components/MetricsChart';
 import ImageUpload from './components/ImageUpload';
 import PDFUpload from './components/PDFUpload';
 import QAPanel from './components/QAPanel';
+import AssignmentPanel from './components/AssignmentPanel';
 import { callAI, PROMPTS, getAIMode } from './lib/ai';
 import { saveToHistory } from './lib/storage';
 import { calculateMetrics } from './lib/metricsWrapper';
@@ -282,6 +283,12 @@ export default function App() {
           {activeView === 'qa' && (
             <section aria-label="Q&A" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <QAPanel onAsk={handleQA} loading={loading} currentDocument={currentDocument} />
+            </section>
+          )}
+
+          {activeView === 'assignment' && (
+            <section aria-label="Assignment Decoder" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <AssignmentPanel ollamaModel={model} />
             </section>
           )}
 

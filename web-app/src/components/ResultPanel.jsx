@@ -163,12 +163,39 @@ function ResultText({ result, onRef, onWordClick }) {
 
 export default function ResultPanel({ result, resultLabel, loading, error, thinking, ollamaModel = '' }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [focusMode,  setFocusMode]  = useState(false);
+  const [focusIdx,   setFocusIdx]   = useState(0);
   const [popup, setPopup] = useState(null);
   const resultDomRef = useRef(null);
 
   useEffect(() => {
+    setFocusMode(false);
+    setFocusIdx(0);
     return () => { window.speechSynthesis.cancel(); setIsSpeaking(false); };
   }, [result]);
+
+  const getSentences = (text) => {
+    if (!text) return [];
+    return text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 3);
+  };
+
+  const sentences = getSentences(result);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === ' ' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        setFocusIdx(i => Math.min(i + 1, sentences.length - 1));
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setFocusIdx(i => Math.max(i - 1, 0));
+      }
+      if (e.key === 'Escape') setFocusMode(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [focusMode, sentences.length]);
 
   const handleWordClick = useCallback((word, rect) => {
     setPopup({ word, rect });
@@ -270,6 +297,12 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
             onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.color = '#6E6E73'; }}>
             Copy
           </button>
+          <button onClick={() => { setFocusMode(true); setFocusIdx(0); }} title="Focus Mode: one sentence at a time"
+            style={iconBtn(false)}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#3d3428'; e.currentTarget.style.color = '#3d3428'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.color = '#6E6E73'; }}>
+            Focus
+          </button>
           <button onClick={handleListen} title={isSpeaking ? 'Stop' : 'Read aloud'}
             aria-label={isSpeaking ? 'Stop reading' : 'Read aloud'} aria-pressed={isSpeaking}
             style={iconBtn(isSpeaking)}
@@ -281,6 +314,95 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
       </div>
 
       <ResultText result={result} onRef={el => { resultDomRef.current = el; }} onWordClick={handleWordClick} />
+
+
+      {focusMode && sentences.length > 0 && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(28,28,28,0.92)', zIndex: 9998,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: '40px 24px',
+        }}>
+          <div style={{ width: '100%', maxWidth: 680 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+              <span style={{ fontSize: 12, color: '#9a9a9f', fontFamily: 'system-ui, sans-serif', letterSpacing: '0.08em' }}>
+                SENTENCE {focusIdx + 1} OF {sentences.length}
+              </span>
+              <button onClick={() => setFocusMode(false)} style={{
+                background: 'none', border: '1px solid #3A3A3C', borderRadius: 6,
+                color: '#9a9a9f', fontSize: 12, padding: '4px 12px', cursor: 'pointer',
+                fontFamily: 'system-ui, sans-serif',
+              }}>Exit Focus</button>
+            </div>
+
+            <div style={{ height: 4, background: '#2C2C2E', borderRadius: 2, marginBottom: 48, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: (((focusIdx + 1) / sentences.length) * 100) + '%',
+                background: '#a88f6b', borderRadius: 2,
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+
+            <div style={{
+              fontSize: 26, lineHeight: 1.8, color: '#F2F0EB',
+              fontFamily: 'OpenDyslexic, sans-serif',
+              textAlign: 'center', marginBottom: 48,
+              letterSpacing: '0.04em', wordSpacing: '0.12em',
+              minHeight: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {sentences[focusIdx]}
+            </div>
+
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center' }}>
+              <button
+                onClick={() => setFocusIdx(i => Math.max(i - 1, 0))}
+                disabled={focusIdx === 0}
+                style={{
+                  background: focusIdx === 0 ? 'none' : '#2C2C2E',
+                  border: '1px solid #3A3A3C', borderRadius: 8,
+                  color: focusIdx === 0 ? '#3A3A3C' : '#F2F0EB',
+                  fontSize: 13, padding: '10px 24px', cursor: focusIdx === 0 ? 'not-allowed' : 'pointer',
+                  fontFamily: 'system-ui, sans-serif', fontWeight: 600,
+                  transition: 'all 0.15s',
+                }}>
+                Previous
+              </button>
+
+              {focusIdx < sentences.length - 1 ? (
+                <button
+                  onClick={() => setFocusIdx(i => i + 1)}
+                  style={{
+                    background: '#a88f6b', border: 'none', borderRadius: 8,
+                    color: '#F2F0EB', fontSize: 14, padding: '12px 36px',
+                    cursor: 'pointer', fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                    boxShadow: '0 4px 16px rgba(168,143,107,0.4)',
+                    transition: 'all 0.15s',
+                  }}>
+                  Next sentence
+                </button>
+              ) : (
+                <button
+                  onClick={() => setFocusMode(false)}
+                  style={{
+                    background: '#10b981', border: 'none', borderRadius: 8,
+                    color: '#fff', fontSize: 14, padding: '12px 36px',
+                    cursor: 'pointer', fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                    boxShadow: '0 4px 16px rgba(16,185,129,0.4)',
+                    transition: 'all 0.15s',
+                  }}>
+                  Done reading
+                </button>
+              )}
+            </div>
+
+            <p style={{ textAlign: 'center', marginTop: 24, fontSize: 11, color: '#6E6E73', fontFamily: 'system-ui, sans-serif' }}>
+              Space or Arrow Right to advance · Arrow Left to go back · Esc to exit
+            </p>
+          </div>
+        </div>
+      )}
 
       {popup && (
         <WordPopup

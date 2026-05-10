@@ -136,6 +136,21 @@ export default function Sidebar({ activeView, onViewChange }) {
         Q&amp;A
       </div>
 
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Assignment Decoder"
+        aria-current={activeView === 'assignment' ? 'page' : undefined}
+        style={navItem('assignment', 'Assignment', activeView === 'assignment')}
+        onClick={() => handleClick('assignment')}
+        onMouseEnter={(e) => handleHover(e, activeView === 'assignment')}
+        onMouseLeave={(e) => handleLeave(e, activeView === 'assignment')}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick('assignment'); }}
+      >
+        <div style={navDot(activeView === 'assignment')} aria-hidden="true" />
+        Assignment
+      </div>
+
       {/* Data section */}
       <div style={{ ...sectionLabel, marginTop: 14 }}>Data</div>
 

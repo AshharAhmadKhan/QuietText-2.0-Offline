@@ -1,6 +1,19 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { callAI, PROMPTS, getAIMode, getGroqKey } from '../lib/ai';
 
+function getFontForLanguage(language) {
+  const scriptFonts = {
+    'Hindi':   '"Noto Sans Devanagari", "Mangal", sans-serif',
+    'Urdu':    '"Noto Nastaliq Urdu", "Urdu Typesetting", sans-serif',
+    'Bengali': '"Noto Sans Bengali", "Vrinda", sans-serif',
+    'Arabic':  '"Noto Sans Arabic", "Arial Unicode MS", sans-serif',
+    'Spanish': 'system-ui, sans-serif',
+    'French':  'system-ui, sans-serif',
+    'English': "OpenDyslexic, sans-serif",
+  };
+  return scriptFonts[language] || "OpenDyslexic, sans-serif";
+}
+
 function renderMarkdown(text, container) {
   let safe = text
     .replace(/&/g, '&amp;')
@@ -63,12 +76,14 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
-  // Position popup above the clicked word
+  // Position popup just below the clicked word, anchored to scroll container
+  const containerRect = popupRef.current?.closest('[data-result-container]')?.getBoundingClientRect() || { left: 0, top: 0 };
+  const relLeft = Math.min(anchorRect.left - containerRect.left, window.innerWidth - 290);
+  const relTop = anchorRect.bottom - containerRect.top + 6;
   const style = {
-    position: 'fixed',
-    left: Math.min(anchorRect.left, window.innerWidth - 280),
-    top: anchorRect.bottom + 8,
-    transform: 'none',
+    position: 'absolute',
+    left: Math.max(0, relLeft),
+    top: relTop,
     width: 260,
     background: '#3d3428',
     color: '#F2F0EB',
@@ -98,7 +113,7 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
   );
 }
 
-function ResultText({ result, onRef, onWordClick }) {
+function ResultText({ result, onRef, onWordClick, fontFamily = "OpenDyslexic, sans-serif" }) {
   const localRef = useRef(null);
 
   useEffect(() => {
@@ -151,7 +166,7 @@ function ResultText({ result, onRef, onWordClick }) {
         letterSpacing: '0.05em',
         wordSpacing: '0.1em',
         color: '#1C1C1E',
-        fontFamily: "'OpenDyslexic', sans-serif",
+        fontFamily: fontFamily,
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-word',
         overflowWrap: 'break-word',
@@ -161,7 +176,7 @@ function ResultText({ result, onRef, onWordClick }) {
   );
 }
 
-export default function ResultPanel({ result, resultLabel, loading, error, thinking, ollamaModel = '' }) {
+export default function ResultPanel({ result, resultLabel, loading, error, thinking, ollamaModel = '', language = 'English' }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [focusMode,  setFocusMode]  = useState(false);
   const [focusIdx,   setFocusIdx]   = useState(0);
@@ -171,7 +186,7 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
   useEffect(() => {
     setFocusMode(false);
     setFocusIdx(0);
-    return () => { window.speechSynthesis.cancel(); setIsSpeaking(false); };
+    return () => { window.speechSynthesis.cancel(); setIsSpeaking(false); if (keepAliveRef && keepAliveRef.current) clearInterval(keepAliveRef.current); };
   }, [result]);
 
   const getSentences = (text) => {
@@ -219,22 +234,39 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
     }
   };
 
+  const speakingRef = useRef(false);
+  const keepAliveRef = useRef(null);
+
+  const stopSpeaking = () => {
+    speakingRef.current = false;
+    setIsSpeaking(false);
+    window.speechSynthesis.cancel();
+    if (keepAliveRef.current) { clearInterval(keepAliveRef.current); keepAliveRef.current = null; }
+  };
+
   const handleListen = () => {
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      return;
-    }
+    if (speakingRef.current) { stopSpeaking(); return; }
     const text = resultDomRef.current?.innerText || resultDomRef.current?.textContent || '';
     if (!text.trim()) return;
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 0.9;
+    utt.rate = 0.85;
     utt.pitch = 1;
-    utt.onend = () => setIsSpeaking(false);
-    utt.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utt);
+    const langMap = {
+      'English': 'en-US', 'Hindi': 'hi-IN', 'Urdu': 'ur-PK',
+      'Bengali': 'bn-BD', 'Arabic': 'ar-SA', 'Spanish': 'es-ES', 'French': 'fr-FR'
+    };
+    utt.lang = langMap[language] || 'en-US';
+    utt.onend = () => stopSpeaking();
+    utt.onerror = (e) => { if (e.error !== 'interrupted') stopSpeaking(); };
+    speakingRef.current = true;
     setIsSpeaking(true);
+    window.speechSynthesis.speak(utt);
+    // Chrome stops speechSynthesis silently after ~15s — keep it alive
+    keepAliveRef.current = setInterval(() => {
+      if (!speakingRef.current) { clearInterval(keepAliveRef.current); return; }
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    }, 10000);
   };
 
   const iconBtn = (active) => ({
@@ -280,7 +312,7 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
   if (!result) return null;
 
   return (
-    <div style={{ animation: 'resultIn 0.25s ease both' }}>
+    <div data-result-container style={{ animation: 'resultIn 0.25s ease both', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div>
           <span style={{ fontSize: 10, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: 'system-ui, sans-serif' }}>
@@ -313,7 +345,7 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
         </div>
       </div>
 
-      <ResultText result={result} onRef={el => { resultDomRef.current = el; }} onWordClick={handleWordClick} />
+      <ResultText result={result} onRef={el => { resultDomRef.current = el; }} onWordClick={handleWordClick} fontFamily={getFontForLanguage(language)} />
 
 
       {focusMode && sentences.length > 0 && (

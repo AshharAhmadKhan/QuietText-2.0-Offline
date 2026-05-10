@@ -234,7 +234,7 @@ export default function App() {
 
               {hasResult && (
                 <section aria-label="Result" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} />
+                  <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} language={language} />
                 </section>
               )}
 
@@ -285,7 +285,7 @@ export default function App() {
 
               {hasResult && (
                 <section aria-label="Result" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} />
+                  <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} language={language} />
                 </section>
               )}
             </>
@@ -299,7 +299,7 @@ export default function App() {
 
               {hasResult && (
                 <section aria-label="Result" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} />
+                  <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} language={language} />
                 </section>
               )}
             </>

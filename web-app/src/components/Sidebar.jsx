@@ -157,6 +157,21 @@ export default function Sidebar({ activeView, onViewChange }) {
       <div
         role="button"
         tabIndex={0}
+        aria-label="Word bank"
+        aria-current={activeView === 'wordbank' ? 'page' : undefined}
+        style={navItem('wordbank', 'Word Bank', activeView === 'wordbank')}
+        onClick={() => handleClick('wordbank')}
+        onMouseEnter={(e) => handleHover(e, activeView === 'wordbank')}
+        onMouseLeave={(e) => handleLeave(e, activeView === 'wordbank')}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick('wordbank'); }}
+      >
+        <div style={navDot(activeView === 'wordbank')} aria-hidden="true" />
+        Word Bank
+      </div>
+
+      <div
+        role="button"
+        tabIndex={0}
         aria-label="View history"
         aria-current={activeView === 'history' ? 'page' : undefined}
         style={navItem('history', 'History', activeView === 'history')}

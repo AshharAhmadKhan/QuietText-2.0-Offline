@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { callAI, PROMPTS, getAIMode, getGroqKey } from '../lib/ai';
+import { saveWord } from '../lib/storage';
 
 function getFontForLanguage(language) {
   const scriptFonts = {
@@ -48,6 +49,7 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
   const [def,     setDef]     = useState('');
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
+  const [saved,   setSaved]   = useState(false);
   const popupRef = useRef(null);
 
   useEffect(() => {
@@ -104,11 +106,23 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
       {loading && <div style={{ color: '#9a9a9f', fontSize: 12 }}>Defining...</div>}
       {error   && <div style={{ color: '#ff8a80', fontSize: 12 }}>{error}</div>}
       {def     && <div>{def}</div>}
-      <button onClick={onClose} style={{
-        marginTop: 10, background: 'none', border: '1px solid rgba(255,255,255,0.2)',
-        borderRadius: 6, color: '#9a9a9f', fontSize: 11, padding: '3px 8px',
-        cursor: 'pointer', fontFamily: 'system-ui, sans-serif'
-      }}>Close</button>
+      <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+        <button onClick={onClose} style={{
+          background: 'none', border: '1px solid rgba(255,255,255,0.2)',
+          borderRadius: 6, color: '#9a9a9f', fontSize: 11, padding: '3px 8px',
+          cursor: 'pointer', fontFamily: 'system-ui, sans-serif'
+        }}>Close</button>
+        {def && !saved && (
+          <button onClick={() => { saveWord(word, def); setSaved(true); }} style={{
+            background: 'rgba(168,143,107,0.25)', border: '1px solid rgba(168,143,107,0.5)',
+            borderRadius: 6, color: '#a88f6b', fontSize: 11, padding: '3px 8px',
+            cursor: 'pointer', fontFamily: 'system-ui, sans-serif'
+          }}>Save to Word Bank</button>
+        )}
+        {saved && (
+          <span style={{ fontSize: 11, color: '#10b981', padding: '3px 0', fontFamily: 'system-ui, sans-serif' }}>Saved</span>
+        )}
+      </div>
     </div>
   );
 }

@@ -64,6 +64,7 @@ export default function StudyGuidePanel({ document: docText, ollamaModel, onClos
       var result = await callAI({
         ollamaModel: ollamaModel,
         system: PROMPTS.studyGuide,
+        purpose: 'studyGuide',
         prompt: docText.slice(0, 60000),
       });
       setGuide(parseGuide(result));

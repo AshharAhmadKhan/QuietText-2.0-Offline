@@ -9,8 +9,9 @@ import PDFUpload from './components/PDFUpload';
 import QAPanel from './components/QAPanel';
 import AssignmentPanel from './components/AssignmentPanel';
 import StudyGuidePanel from './components/StudyGuidePanel';
+import WordBankPanel from './components/WordBankPanel';
 import { callAI, PROMPTS, getAIMode } from './lib/ai';
-import { saveToHistory } from './lib/storage';
+import { saveToHistory, getHistory, clearHistory } from './lib/storage';
 import { calculateMetrics } from './lib/metricsWrapper';
 
 const MAX_CHARS = 400000;
@@ -31,11 +32,10 @@ export default function App() {
   const [error,        setError]        = useState('');
   const [hasResult,    setHasResult]    = useState(false);
   const [metrics,      setMetrics]      = useState(null);
-  const [pdfText,      setPdfText]      = useState('');
   const [currentDocument, setCurrentDocument] = useState('');
-  const [pdfFileName,  setPdfFileName]  = useState('');
   const [mode,         setMode]         = useState(getAIMode());
   const [showStudyGuide, setShowStudyGuide] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState([]);
 
   const sanitize = (text) => {
     if (!text || typeof text !== 'string') return '';
@@ -48,8 +48,8 @@ export default function App() {
   const safeStyle = VALID_STYLES.includes(explainStyle) ? explainStyle : 'plain';
 
   const isReady = () => {
-    const mode = getAIMode();
-    if (mode === 'online') return true;
+    const m = getAIMode();
+    if (m === 'online') return true;
     return !!model;
   };
 
@@ -66,13 +66,14 @@ export default function App() {
     setResult('');
     setMetrics(null);
     setHasResult(true);
+    setShowStudyGuide(false);
 
     try {
       const system = safeLang === 'English'
         ? PROMPTS.simplify(safeLevel)
         : PROMPTS.multilingual(safeLang, safeLevel);
 
-      const output = await callAI({ ollamaModel: model, system, prompt: clean });
+      const output = await callAI({ ollamaModel: model, system, prompt: clean, purpose: 'text' });
       setResult(output);
       setResultLabel('Simplified Text');
       setCurrentDocument(clean);
@@ -102,6 +103,7 @@ export default function App() {
     setResult('');
     setMetrics(null);
     setHasResult(true);
+    setShowStudyGuide(false);
 
     try {
       const promptMap = {
@@ -112,7 +114,7 @@ export default function App() {
       const system = promptMap[safeStyle] || PROMPTS.explainPlain;
       const labelMap = { plain: 'Explanation', bullets: 'Key Points', steps: 'Step by Step' };
 
-      const output = await callAI({ ollamaModel: model, system, prompt: clean });
+      const output = await callAI({ ollamaModel: model, system, prompt: clean, purpose: 'text' });
       setResult(output);
       setResultLabel(labelMap[safeStyle] || 'Explanation');
 
@@ -123,7 +125,6 @@ export default function App() {
       setLoading(false);
     }
   };
-
 
   const handleImageProcess = async (base64, mimeType) => {
     if (!base64) return;
@@ -136,12 +137,14 @@ export default function App() {
     setResult('');
     setMetrics(null);
     setHasResult(true);
+    setShowStudyGuide(false);
     try {
       const output = await callAI({
         ollamaModel: model,
         system: PROMPTS.imageSimplify,
         prompt: 'Read all the text in this image and rewrite it in simple language.',
-        images: [base64, mimeType]
+        images: [base64, mimeType],
+        purpose: 'text'
       });
       setResult(output);
       setResultLabel('Simplified Image Text');
@@ -165,13 +168,15 @@ export default function App() {
     setResult('');
     setMetrics(null);
     setHasResult(true);
+    setShowStudyGuide(false);
 
     try {
       const output = await callAI({
         ollamaModel: model,
         system: PROMPTS.simplify('adult'),
         prompt: 'Read this entire PDF document and rewrite it in simple, clear language. Use short sentences. Keep all important information.',
-        pdf: pdfBase64
+        pdf: pdfBase64,
+        purpose: 'text'
       });
       setResult(output);
       setResultLabel('Simplified PDF');
@@ -184,19 +189,49 @@ export default function App() {
     }
   };
 
-  const handleQA = async (question) => {
+  // Now receives history array from QAPanel and builds proper multi-turn messages
+  const handleQA = async (question, history = []) => {
     if (!currentDocument || !question) return '';
     try {
+      // Build conversation context from history (last 6 turns to keep context manageable)
+      const recentHistory = history.slice(-6);
+      const historyText = recentHistory.length > 1
+        ? '\n\nConversation so far:\n' + recentHistory.slice(0, -1).map(m =>
+            (m.role === 'user' ? 'Student: ' : 'Tutor: ') + m.text
+          ).join('\n')
+        : '';
+
       const output = await callAI({
         ollamaModel: model,
         system: PROMPTS.qa(currentDocument),
-        prompt: question
+        prompt: historyText + '\n\nStudent: ' + question,
+        purpose: 'qa'
       });
       return output;
     } catch (e) {
       return 'Error: ' + e.message;
     }
   };
+
+  const loadHistory = () => {
+    setHistoryEntries(getHistory());
+  };
+
+  const handleClearHistory = () => {
+    clearHistory();
+    setHistoryEntries([]);
+  };
+
+  const handleRestoreFromHistory = (entry) => {
+    setResult(entry.result);
+    setResultLabel('Simplified Text');
+    setCurrentDocument(entry.original !== '[PDF upload]' && entry.original !== '[Image upload]' ? entry.original : entry.result);
+    setHasResult(true);
+    setMetrics(null);
+    setShowStudyGuide(false);
+    setActiveView('simplify');
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: '#F2F0EB', display: 'flex', flexDirection: 'column' }}>
       <a href="#main-content" className="skip-link">Skip to main content</a>
@@ -210,7 +245,7 @@ export default function App() {
       </header>
 
       <main id="main-content" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <Sidebar activeView={activeView} onViewChange={setActiveView} />
+        <Sidebar activeView={activeView} onViewChange={(v) => { setActiveView(v); if (v === 'history') loadHistory(); }} />
 
         <div style={{ flex: 1, background: '#F2F0EB', overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
@@ -238,26 +273,26 @@ export default function App() {
                 </section>
               )}
 
-              {hasResult && currentDocument && (loading === false) && (
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+              {hasResult && currentDocument && !loading && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
                   <button
-                    onClick={() => setShowStudyGuide(function(v) { return !v; })}
+                    onClick={() => setShowStudyGuide(v => !v)}
                     style={{
-                      background: showStudyGuide ? "#3d3428" : "#f5f3ef",
-                      color: showStudyGuide ? "#F2F0EB" : "#3d3428",
-                      border: "1px solid #3d3428", borderRadius: 8,
-                      padding: "8px 18px", fontSize: 13, fontWeight: 600,
-                      cursor: "pointer", fontFamily: "system-ui, sans-serif",
+                      background: showStudyGuide ? '#3d3428' : '#f5f3ef',
+                      color: showStudyGuide ? '#F2F0EB' : '#3d3428',
+                      border: '1px solid #3d3428', borderRadius: 8,
+                      padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
                     }}
                   >
-                    {showStudyGuide ? "Hide Study Guide" : "Generate Study Guide"}
+                    {showStudyGuide ? 'Hide Study Guide' : 'Generate Study Guide'}
                   </button>
                 </div>
               )}
 
               {showStudyGuide && currentDocument && (
-                <section style={{ background: "#FFFFFF", borderRadius: 12, border: "1px solid #E8E6E1", padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={function() { setShowStudyGuide(false); }} />
+                <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
                 </section>
               )}
 
@@ -288,6 +323,29 @@ export default function App() {
                   <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} language={language} />
                 </section>
               )}
+
+              {hasResult && currentDocument && !loading && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                  <button
+                    onClick={() => setShowStudyGuide(v => !v)}
+                    style={{
+                      background: showStudyGuide ? '#3d3428' : '#f5f3ef',
+                      color: showStudyGuide ? '#F2F0EB' : '#3d3428',
+                      border: '1px solid #3d3428', borderRadius: 8,
+                      padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                    }}
+                  >
+                    {showStudyGuide ? 'Hide Study Guide' : 'Generate Study Guide'}
+                  </button>
+                </div>
+              )}
+
+              {showStudyGuide && currentDocument && (
+                <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                </section>
+              )}
             </>
           )}
 
@@ -300,6 +358,29 @@ export default function App() {
               {hasResult && (
                 <section aria-label="Result" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                   <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} language={language} />
+                </section>
+              )}
+
+              {hasResult && currentDocument && !loading && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                  <button
+                    onClick={() => setShowStudyGuide(v => !v)}
+                    style={{
+                      background: showStudyGuide ? '#3d3428' : '#f5f3ef',
+                      color: showStudyGuide ? '#F2F0EB' : '#3d3428',
+                      border: '1px solid #3d3428', borderRadius: 8,
+                      padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                    }}
+                  >
+                    {showStudyGuide ? 'Hide Study Guide' : 'Generate Study Guide'}
+                  </button>
+                </div>
+              )}
+
+              {showStudyGuide && currentDocument && (
+                <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
                 </section>
               )}
             </>
@@ -317,10 +398,52 @@ export default function App() {
             </section>
           )}
 
+          {activeView === 'wordbank' && (
+            <section aria-label="Word Bank" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <WordBankPanel />
+            </section>
+          )}
+
           {activeView === 'history' && (
             <section aria-label="History" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12, fontFamily: 'system-ui, sans-serif' }}>History</div>
-              <p style={{ fontSize: 14, color: '#6E6E73', lineHeight: 1.7, fontFamily: 'system-ui, sans-serif' }}>Your last 20 simplifications, stored in your browser only.</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: 'system-ui, sans-serif' }}>History</div>
+                {historyEntries.length > 0 && (
+                  <button onClick={handleClearHistory} style={{ fontSize: 11, color: '#9a9a9f', background: 'none', border: '1px solid #E8E6E1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}>
+                    Clear all
+                  </button>
+                )}
+              </div>
+              {historyEntries.length === 0 ? (
+                <p style={{ fontSize: 14, color: '#6E6E73', fontFamily: 'system-ui, sans-serif' }}>No history yet. Simplify some text first.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {historyEntries.map(entry => (
+                    <div
+                      key={entry.id}
+                      onClick={() => handleRestoreFromHistory(entry)}
+                      style={{
+                        padding: '12px 14px', borderRadius: 10, border: '1px solid #E8E6E1',
+                        background: '#FAFAF8', cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#a88f6b'; e.currentTarget.style.background = '#fdf9f4'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E6E1'; e.currentTarget.style.background = '#FAFAF8'; }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#a88f6b', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'system-ui, sans-serif' }}>
+                          {entry.type || 'simplify'}
+                        </span>
+                        <span style={{ fontSize: 10, color: '#9a9a9f', fontFamily: 'system-ui, sans-serif' }}>
+                          {new Date(entry.timestamp).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 13, color: '#1C1C1E', fontFamily: 'OpenDyslexic, sans-serif', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {entry.preview}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           )}
 

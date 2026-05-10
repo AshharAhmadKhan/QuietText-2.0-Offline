@@ -19,6 +19,7 @@ export default function AssignmentPanel({ ollamaModel }) {
       const result = await callAI({
         ollamaModel,
         system: PROMPTS.assignment,
+        purpose: 'assignment',
         prompt: text,
       });
       const raw = result.split(String.fromCharCode(10));

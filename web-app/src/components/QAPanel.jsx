@@ -1,8 +1,8 @@
+import { useState } from 'react';
+
 function stripMd(t) {
   return t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").trim();
 }
-
-import { useState } from 'react';
 
 export default function QAPanel({ onAsk, loading, currentDocument }) {
   const [question, setQuestion] = useState('');
@@ -12,8 +12,9 @@ export default function QAPanel({ onAsk, loading, currentDocument }) {
     const q = question.trim();
     if (!q || loading) return;
     setQuestion('');
-    setHistory(h => [...h, { role: 'user', text: q }]);
-    const answer = await onAsk(q);
+    const newHistory = [...history, { role: 'user', text: q }];
+    setHistory(newHistory);
+    const answer = await onAsk(q, newHistory);
     if (answer) setHistory(h => [...h, { role: 'ai', text: answer }]);
   };
 

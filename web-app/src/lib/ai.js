@@ -3,11 +3,8 @@
 // TEXT:    Groq first (5s timeout), Gemma 4 auto-fallback for long text
 // IMAGES:  Gemma 4 vision (only model that can read images)
 // PDFs:    Gemma 4 (256K context, handles scanned docs)
+// QA/STUDY/ASSIGNMENT: Gemma 4 (better reasoning)
 // OFFLINE: Ollama gemma4:e2b (fully local, nothing leaves device)
-//
-// Story: Groq handles fast everyday text. Gemma 4 handles vision,
-// long documents, and silently takes over when Groq hits its limits.
-// Nothing ever fails silently — the user always gets an answer.
 
 import { callGroq, checkGroq }     from "./groq";
 import { callGemini, checkGemini, GEMINI_MODELS } from "./gemini";
@@ -23,8 +20,11 @@ export const saveGroqKey  = (k) => localStorage.setItem("qt2_groq_key", k);
 export const getGeminiKey = () => localStorage.getItem("qt2_gemini_key") || "";
 export const saveGeminiKey= (k) => localStorage.setItem("qt2_gemini_key", k);
 
+// purposes that need Gemini's stronger reasoning
+const GEMINI_PURPOSES = new Set(["qa", "studyGuide", "assignment"]);
+
 // --- Main router ---
-export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = "" }) {
+export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = "", purpose = "text", history = [] }) {
   const mode = getAIMode();
 
   // Offline mode — Ollama for everything
@@ -45,6 +45,18 @@ export async function callAI({ system, prompt, images = [], pdf = null, ollamaMo
     const geminiKey = getGeminiKey();
     if (!geminiKey) throw new Error("Image processing needs a Gemini API key. Add it in Settings.");
     return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt, imageBase64: images[0], mimeType: images[1] || null });
+  }
+
+  // QA / Study Guide / Assignment → Gemma 4 (stronger reasoning needed)
+  if (GEMINI_PURPOSES.has(purpose)) {
+    const geminiKey = getGeminiKey();
+    if (geminiKey) {
+      try {
+        return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
+      } catch (e) {
+        // fall through to Groq if Gemini fails
+      }
+    }
   }
 
   // Text → Groq first (5s timeout), then Gemma 4 fallback

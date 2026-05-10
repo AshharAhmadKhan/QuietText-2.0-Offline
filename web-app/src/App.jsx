@@ -8,6 +8,7 @@ import ImageUpload from './components/ImageUpload';
 import PDFUpload from './components/PDFUpload';
 import QAPanel from './components/QAPanel';
 import AssignmentPanel from './components/AssignmentPanel';
+import StudyGuidePanel from './components/StudyGuidePanel';
 import { callAI, PROMPTS, getAIMode } from './lib/ai';
 import { saveToHistory } from './lib/storage';
 import { calculateMetrics } from './lib/metricsWrapper';
@@ -34,6 +35,7 @@ export default function App() {
   const [currentDocument, setCurrentDocument] = useState('');
   const [pdfFileName,  setPdfFileName]  = useState('');
   const [mode,         setMode]         = useState(getAIMode());
+  const [showStudyGuide, setShowStudyGuide] = useState(false);
 
   const sanitize = (text) => {
     if (!text || typeof text !== 'string') return '';
@@ -233,6 +235,29 @@ export default function App() {
               {hasResult && (
                 <section aria-label="Result" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                   <ResultPanel result={result} resultLabel={resultLabel} loading={loading} error={error} ollamaModel={model} />
+                </section>
+              )}
+
+              {hasResult && currentDocument && (loading === false) && (
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                  <button
+                    onClick={() => setShowStudyGuide(function(v) { return !v; })}
+                    style={{
+                      background: showStudyGuide ? "#3d3428" : "#f5f3ef",
+                      color: showStudyGuide ? "#F2F0EB" : "#3d3428",
+                      border: "1px solid #3d3428", borderRadius: 8,
+                      padding: "8px 18px", fontSize: 13, fontWeight: 600,
+                      cursor: "pointer", fontFamily: "system-ui, sans-serif",
+                    }}
+                  >
+                    {showStudyGuide ? "Hide Study Guide" : "Generate Study Guide"}
+                  </button>
+                </div>
+              )}
+
+              {showStudyGuide && currentDocument && (
+                <section style={{ background: "#FFFFFF", borderRadius: 12, border: "1px solid #E8E6E1", padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={function() { setShowStudyGuide(false); }} />
                 </section>
               )}
 

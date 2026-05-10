@@ -1,3 +1,7 @@
+function stripMd(t) {
+  return t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").trim();
+}
+
 import { useState } from 'react';
 
 export default function QAPanel({ onAsk, loading, currentDocument }) {
@@ -44,7 +48,7 @@ export default function QAPanel({ onAsk, loading, currentDocument }) {
                   maxWidth: '85%',
                   fontFamily: msg.role === 'ai' ? 'OpenDyslexic, system-ui, sans-serif' : 'system-ui, sans-serif'
                 }}>
-                  {msg.text}
+                  {stripMd(msg.text)}
                 </div>
               ))}
               {loading && (

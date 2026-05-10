@@ -1,78 +1,89 @@
 // ai.js — unified AI router
 //
-// TEXT (Simplify, Explain):  → Groq  (Llama 3.1 8B, ~1-2s, 840 tok/s)
-// IMAGES (OCR, photo):       → Gemma 4 API (vision capable, hackathon valid)
-// OFFLINE:                   → Ollama gemma4:e2b (local, slow but private)
+// TEXT:    Groq first (5s timeout), Gemma 4 auto-fallback for long text
+// IMAGES:  Gemma 4 vision (only model that can read images)
+// PDFs:    Gemma 4 (256K context, handles scanned docs)
+// OFFLINE: Ollama gemma4:e2b (fully local, nothing leaves device)
 //
-// Hackathon story: Gemma 4 powers the headline feature (image OCR offline).
-// Groq powers the UX so dyslexic users aren't waiting 20 seconds per read.
+// Story: Groq handles fast everyday text. Gemma 4 handles vision,
+// long documents, and silently takes over when Groq hits its limits.
+// Nothing ever fails silently — the user always gets an answer.
 
-import { callGroq, checkGroq }     from './groq';
-import { callGemini, checkGemini, GEMINI_MODELS } from './gemini';
-import { callOllama, checkOllama, PROMPTS }        from './ollama';
+import { callGroq, checkGroq }     from "./groq";
+import { callGemini, checkGemini, GEMINI_MODELS } from "./gemini";
+import { callOllama, checkOllama, PROMPTS }        from "./ollama";
 
 export { PROMPTS };
 
 // --- Storage helpers ---
-export const getAIMode    = () => localStorage.getItem('qt2_ai_mode') || 'online';
-export const setAIMode    = (m) => localStorage.setItem('qt2_ai_mode', m);
-export const getGroqKey   = () => localStorage.getItem('qt2_groq_key') || '';
-export const saveGroqKey  = (k) => localStorage.setItem('qt2_groq_key', k);
-export const getGeminiKey = () => localStorage.getItem('qt2_gemini_key') || '';
-export const saveGeminiKey= (k) => localStorage.setItem('qt2_gemini_key', k);
+export const getAIMode    = () => localStorage.getItem("qt2_ai_mode") || "online";
+export const setAIMode    = (m) => localStorage.setItem("qt2_ai_mode", m);
+export const getGroqKey   = () => localStorage.getItem("qt2_groq_key") || "";
+export const saveGroqKey  = (k) => localStorage.setItem("qt2_groq_key", k);
+export const getGeminiKey = () => localStorage.getItem("qt2_gemini_key") || "";
+export const saveGeminiKey= (k) => localStorage.setItem("qt2_gemini_key", k);
 
 // --- Main router ---
-export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = '' }) {
+export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = "" }) {
   const mode = getAIMode();
 
   // Offline mode — Ollama for everything
-  if (mode === 'ollama') {
-    if (!ollamaModel) throw new Error('No Ollama model selected.');
+  if (mode === "ollama") {
+    if (!ollamaModel) throw new Error("No Ollama model selected.");
     return callOllama({ model: ollamaModel, system, prompt, images });
   }
 
   // PDF → Gemma 4 (256K context, handles text + scanned, no chunking)
   if (pdf) {
     const geminiKey = getGeminiKey();
-    if (!geminiKey) throw new Error('PDF processing needs a Gemini API key. Add it in Settings.');
-    return callGemini({
-      apiKey: geminiKey,
-      model: GEMINI_MODELS.VISION,
-      system,
-      prompt,
-      pdfBase64: pdf
-    });
+    if (!geminiKey) throw new Error("PDF processing needs a Gemini API key. Add it in Settings.");
+    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt, pdfBase64: pdf });
   }
 
   // Image → Gemma 4 vision
   if (images.length > 0) {
     const geminiKey = getGeminiKey();
-    if (!geminiKey) throw new Error('Image processing needs a Gemini API key. Add it in Settings.');
-    return callGemini({
-      apiKey: geminiKey,
-      model: GEMINI_MODELS.VISION,
-      system,
-      prompt,
-      imageBase64: images[0],
-      mimeType: images[1] || null
-    });
+    if (!geminiKey) throw new Error("Image processing needs a Gemini API key. Add it in Settings.");
+    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt, imageBase64: images[0], mimeType: images[1] || null });
   }
 
-  // Text → Groq (fast, ~1-2s)
+  // Text → Groq first (5s timeout), then Gemma 4 fallback
   const groqKey = getGroqKey();
-  if (!groqKey) throw new Error('Add your Groq API key in Settings for fast text responses.');
-  return callGroq({ apiKey: groqKey, system, prompt });
+  if (!groqKey) throw new Error("Add your Groq API key in Settings for fast text responses.");
+
+  try {
+    return await callGroq({ apiKey: groqKey, system, prompt });
+  } catch (groqErr) {
+    const msg = groqErr.message.toLowerCase();
+    const shouldFallback = msg.includes("rate limit")
+      || msg.includes("429")
+      || msg.includes("too large")
+      || msg.includes("context")
+      || msg.includes("token")
+      || msg.includes("length")
+      || msg.includes("timed out")
+      || msg.includes("abort");
+    if (!shouldFallback) throw groqErr;
+
+    // Gemma 4 fallback — handles long text that Groq cannot
+    const geminiKey = getGeminiKey();
+    if (!geminiKey) throw groqErr;
+    try {
+      return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
+    } catch {
+      throw groqErr;
+    }
+  }
 }
 
 // --- Status check ---
-export async function checkAIStatus(ollamaModel = '') {
+export async function checkAIStatus(ollamaModel = "") {
   const mode = getAIMode();
-  if (mode === 'ollama') {
+  if (mode === "ollama") {
     const r = await checkOllama();
-    return { mode: 'ollama', ...r };
+    return { mode: "ollama", ...r };
   }
-  // Online: check Groq (primary for text)
   const groqKey = getGroqKey();
   const r = await checkGroq(groqKey);
-  return { mode: 'online', ...r };
+  return { mode: "online", ...r };
 }

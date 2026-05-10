@@ -18,7 +18,7 @@ export async function callGroq({ apiKey, system, prompt }) {
   };
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000);
+  const timer = setTimeout(() => controller.abort(), 5000);
 
   try {
     const res = await fetch(GROQ_BASE, {

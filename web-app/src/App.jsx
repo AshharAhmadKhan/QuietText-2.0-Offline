@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import AIStatus from './components/AIStatus';
 import InputPanel from './components/InputPanel';
@@ -39,6 +39,16 @@ export default function App() {
   const [showStudyGuide, setShowStudyGuide] = useState(false);
   const [showExam, setShowExam] = useState(false);
   const [historyEntries, setHistoryEntries] = useState([]);
+
+  // Read text from URL parameter when app loads (from extension)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlText = params.get('text');
+    if (urlText) {
+      setInputText(decodeURIComponent(urlText));
+      setActiveView('simplify');
+    }
+  }, []);
 
   const sanitize = (text) => {
     if (!text || typeof text !== 'string') return '';

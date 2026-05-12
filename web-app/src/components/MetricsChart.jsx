@@ -82,7 +82,7 @@ const MetricsChart = memo(function MetricsChart({ before, after }) {
     { label: 'Readability Score',   b: before.readabilityScore,  a: after.readabilityScore,  higherBetter: true  },
     { label: 'Avg Sentence Length', b: before.avgSentenceLength, a: after.avgSentenceLength, higherBetter: false },
     { label: 'Difficult Words %',   b: before.difficultWordPct,  a: after.difficultWordPct,  higherBetter: false },
-    { label: 'Reading Time (min)',  b: before.readingTime,       a: after.readingTime,       higherBetter: false },
+    { label: 'Reading Time (min)',  b: before.readingTime,       a: after.readingTime,       higherBetter: false, neutral: true },
   ];
 
   return (
@@ -110,6 +110,7 @@ const MetricsChart = memo(function MetricsChart({ before, after }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
         {metrics.map(m => {
           const improved = m.higherBetter ? m.a > m.b : m.a < m.b;
+          const isNeutral = m.neutral === true;
           const same = m.a === m.b;
           return (
             <div key={m.label} style={{

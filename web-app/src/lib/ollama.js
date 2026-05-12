@@ -323,8 +323,9 @@ TOTAL TIME: Add up all the time estimates and write the total here.
 
 Plain text only. No asterisks, no bold, no markdown.`,
 
-  wordDefine: `Explain the following word or phrase in one simple sentence.
-Use plain everyday English. Return only the explanation.`,
+  checkAnswers: function(doc, qas) {
+    return 'You are a warm, encouraging tutor checking a student answers. The student has dyslexia. Be kind, short, and clear.\n\nThe document they studied:\n---\n' + doc.slice(0, 40000) + '\n---\n\nCheck each of the student answers against the document.\n\nReply for every question using exactly this format:\nQ1: your feedback here\nQ2: your feedback here\nQ3: your feedback here\nQ4: your feedback here\nQ5: your feedback here\n\nRules:\n- If correct: say something warm and confirming. Example: Q1: Yes, that is exactly right. Well done.\n- If not correct: be gentle, never use the words wrong or incorrect, give a hint not the answer. Example: Q2: Not quite. Think about what the text says happens before that.\n- If partially right: acknowledge what they got right first, then hint at the missing part. Example: Q3: You have the right idea. See if you can also think about who was involved.\n- Only call an answer blank if it literally says (no answer given). If the student wrote anything at all, even if it makes no sense, treat it as their attempt and give feedback on it.\n- Never use the words wrong, incorrect, or bad.\n- Maximum 2 sentences per question.\n- Plain text only. No markdown. No emojis. No asterisks.\n- Always give feedback for all 5 questions even if some are blank.';
+  },
 
   examQuestions: `You are an experienced teacher creating comprehension questions to help a dyslexic student check their own understanding.
 

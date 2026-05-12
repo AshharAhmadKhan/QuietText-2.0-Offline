@@ -9,6 +9,7 @@ import PDFUpload from './components/PDFUpload';
 import QAPanel from './components/QAPanel';
 import AssignmentPanel from './components/AssignmentPanel';
 import StudyGuidePanel from './components/StudyGuidePanel';
+import ExamPanel from './components/ExamPanel';
 import WordBankPanel from './components/WordBankPanel';
 import { callAI, PROMPTS, getAIMode } from './lib/ai';
 import { saveToHistory, getHistory, clearHistory } from './lib/storage';
@@ -35,6 +36,7 @@ export default function App() {
   const [currentDocument, setCurrentDocument] = useState('');
   const [mode,         setMode]         = useState(getAIMode());
   const [showStudyGuide, setShowStudyGuide] = useState(false);
+  const [showExam, setShowExam] = useState(false);
   const [historyEntries, setHistoryEntries] = useState([]);
 
   const sanitize = (text) => {
@@ -67,6 +69,7 @@ export default function App() {
     setMetrics(null);
     setHasResult(true);
     setShowStudyGuide(false);
+    setShowExam(false);
 
     try {
       const system = safeLang === 'English'
@@ -104,6 +107,7 @@ export default function App() {
     setMetrics(null);
     setHasResult(true);
     setShowStudyGuide(false);
+    setShowExam(false);
 
     try {
       const promptMap = {
@@ -138,6 +142,7 @@ export default function App() {
     setMetrics(null);
     setHasResult(true);
     setShowStudyGuide(false);
+    setShowExam(false);
     try {
       const output = await callAI({
         ollamaModel: model,
@@ -169,6 +174,7 @@ export default function App() {
     setMetrics(null);
     setHasResult(true);
     setShowStudyGuide(false);
+    setShowExam(false);
 
     try {
       const output = await callAI({
@@ -229,6 +235,7 @@ export default function App() {
     setHasResult(true);
     setMetrics(null);
     setShowStudyGuide(false);
+    setShowExam(false);
     setActiveView('simplify');
   };
 
@@ -274,9 +281,21 @@ export default function App() {
               )}
 
               {hasResult && currentDocument && !loading && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 4 }}>
                   <button
-                    onClick={() => setShowStudyGuide(v => !v)}
+                    onClick={() => { setShowExam(v => !v); setShowStudyGuide(false); }}
+                    style={{
+                      background: showExam ? '#3d3428' : '#f5f3ef',
+                      color: showExam ? '#F2F0EB' : '#3d3428',
+                      border: '1px solid #3d3428', borderRadius: 8,
+                      padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                    }}
+                  >
+                    {showExam ? 'Hide Test' : 'Test Yourself'}
+                  </button>
+                  <button
+                    onClick={() => { setShowStudyGuide(v => !v); setShowExam(false); }}
                     style={{
                       background: showStudyGuide ? '#3d3428' : '#f5f3ef',
                       color: showStudyGuide ? '#F2F0EB' : '#3d3428',
@@ -293,6 +312,11 @@ export default function App() {
               {showStudyGuide && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                   <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                </section>
+              )}
+              {showExam && currentDocument && (
+                <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <ExamPanel document={currentDocument} ollamaModel={model} onClose={() => setShowExam(false)} />
                 </section>
               )}
 
@@ -325,9 +349,21 @@ export default function App() {
               )}
 
               {hasResult && currentDocument && !loading && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 4 }}>
                   <button
-                    onClick={() => setShowStudyGuide(v => !v)}
+                    onClick={() => { setShowExam(v => !v); setShowStudyGuide(false); }}
+                    style={{
+                      background: showExam ? '#3d3428' : '#f5f3ef',
+                      color: showExam ? '#F2F0EB' : '#3d3428',
+                      border: '1px solid #3d3428', borderRadius: 8,
+                      padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                    }}
+                  >
+                    {showExam ? 'Hide Test' : 'Test Yourself'}
+                  </button>
+                  <button
+                    onClick={() => { setShowStudyGuide(v => !v); setShowExam(false); }}
                     style={{
                       background: showStudyGuide ? '#3d3428' : '#f5f3ef',
                       color: showStudyGuide ? '#F2F0EB' : '#3d3428',
@@ -344,6 +380,11 @@ export default function App() {
               {showStudyGuide && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                   <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                </section>
+              )}
+              {showExam && currentDocument && (
+                <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <ExamPanel document={currentDocument} ollamaModel={model} onClose={() => setShowExam(false)} />
                 </section>
               )}
             </>
@@ -362,9 +403,21 @@ export default function App() {
               )}
 
               {hasResult && currentDocument && !loading && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 4 }}>
                   <button
-                    onClick={() => setShowStudyGuide(v => !v)}
+                    onClick={() => { setShowExam(v => !v); setShowStudyGuide(false); }}
+                    style={{
+                      background: showExam ? '#3d3428' : '#f5f3ef',
+                      color: showExam ? '#F2F0EB' : '#3d3428',
+                      border: '1px solid #3d3428', borderRadius: 8,
+                      padding: '8px 18px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                    }}
+                  >
+                    {showExam ? 'Hide Test' : 'Test Yourself'}
+                  </button>
+                  <button
+                    onClick={() => { setShowStudyGuide(v => !v); setShowExam(false); }}
                     style={{
                       background: showStudyGuide ? '#3d3428' : '#f5f3ef',
                       color: showStudyGuide ? '#F2F0EB' : '#3d3428',
@@ -381,6 +434,11 @@ export default function App() {
               {showStudyGuide && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                   <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                </section>
+              )}
+              {showExam && currentDocument && (
+                <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <ExamPanel document={currentDocument} ollamaModel={model} onClose={() => setShowExam(false)} />
                 </section>
               )}
             </>

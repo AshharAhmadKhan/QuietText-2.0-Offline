@@ -21,7 +21,7 @@ export const getGeminiKey = () => localStorage.getItem("qt2_gemini_key") || "";
 export const saveGeminiKey= (k) => localStorage.setItem("qt2_gemini_key", k);
 
 // purposes that need Gemini's stronger reasoning
-const GEMINI_PURPOSES = new Set(["qa", "studyGuide", "assignment"]);
+const GEMINI_PURPOSES = new Set(["qa", "studyGuide", "assignment", "examQuestions", "checkAnswers"]);
 
 // --- Main router ---
 export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = "", purpose = "text", history = [] }) {

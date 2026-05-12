@@ -7,15 +7,23 @@ function stripMd(t) {
 export default function QAPanel({ onAsk, loading, currentDocument }) {
   const [question, setQuestion] = useState('');
   const [history,  setHistory]  = useState([]);
+  const [isAsking, setIsAsking] = useState(false);
 
   const handleAsk = async () => {
     const q = question.trim();
-    if (!q || loading) return;
-    setQuestion('');
+    if (!q || loading || isAsking) return;
+    
+    setIsAsking(true);
     const newHistory = [...history, { role: 'user', text: q }];
     setHistory(newHistory);
-    const answer = await onAsk(q, newHistory);
-    if (answer) setHistory(h => [...h, { role: 'ai', text: answer }]);
+    setQuestion(''); // Clear input immediately
+    
+    try {
+      const answer = await onAsk(q, newHistory);
+      if (answer) setHistory(h => [...h, { role: 'ai', text: answer }]);
+    } finally {
+      setIsAsking(false);
+    }
   };
 
   return (
@@ -52,7 +60,7 @@ export default function QAPanel({ onAsk, loading, currentDocument }) {
                   {stripMd(msg.text)}
                 </div>
               ))}
-              {loading && (
+              {isAsking && (
                 <div style={{ padding: '10px 14px', borderRadius: 8, fontSize: 14, background: '#f5f3ef', color: '#9a9a9f', alignSelf: 'flex-start', maxWidth: '85%' }}>
                   Thinking...
                 </div>
@@ -65,27 +73,28 @@ export default function QAPanel({ onAsk, loading, currentDocument }) {
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
+              onKeyDown={(e) => e.key === 'Enter' && !isAsking && handleAsk()}
               placeholder="Ask anything about the document..."
-              disabled={loading}
+              disabled={isAsking}
               style={{
                 flex: 1, padding: '10px 14px', fontSize: 14,
                 border: '1px solid #E8E6E1', borderRadius: 8,
                 fontFamily: 'system-ui, sans-serif', outline: 'none',
-                background: loading ? '#f5f3ef' : '#fff', color: '#1C1C1E'
+                background: isAsking ? '#f5f3ef' : '#fff', color: '#1C1C1E',
+                cursor: isAsking ? 'not-allowed' : 'text'
               }}
             />
             <button
               onClick={handleAsk}
-              disabled={loading || !question.trim()}
+              disabled={isAsking || !question.trim()}
               style={{
-                background: loading || !question.trim() ? '#9a9a9f' : '#3d3428',
+                background: isAsking || !question.trim() ? '#9a9a9f' : '#3d3428',
                 color: '#F2F0EB', border: 'none', borderRadius: 8,
                 padding: '10px 20px', fontSize: 14, fontWeight: 600,
-                cursor: loading || !question.trim() ? 'not-allowed' : 'pointer'
+                cursor: isAsking || !question.trim() ? 'not-allowed' : 'pointer'
               }}
             >
-              Ask
+              {isAsking ? 'Asking...' : 'Ask'}
             </button>
           </div>
 

@@ -1,11 +1,10 @@
 function showTab(tab) {
   document.querySelectorAll(".qt-tab-content").forEach(function(el) { el.classList.add("qt-hidden"); });
   document.querySelectorAll(".qt-tab").forEach(function(el) { el.classList.remove("active"); });
-  var panels = { presets:"panelPresets", history:"panelHistory", settings:"panelSettings" };
-  var tabs   = { presets:"tabPresets",   history:"tabHistory",   settings:"tabSettings" };
+  var panels = { presets:"panelPresets", settings:"panelSettings" };
+  var tabs   = { presets:"tabPresets",   settings:"tabSettings" };
   document.getElementById(panels[tab]).classList.remove("qt-hidden");
   document.getElementById(tabs[tab]).classList.add("active");
-  if (tab === "history") loadHistory();
   if (tab === "settings") updateKeyStatus();
 }
 
@@ -38,44 +37,11 @@ function updatePresetUI(preset) {
   });
 }
 
-function loadHistory() {
-  var list = document.getElementById("historyList");
-  chrome.storage.local.get(["quiettext_history"], function(data) {
-    var history = data.quiettext_history || [];
-    if (!history.length) {
-      list.innerHTML = "";
-      var p = document.createElement("p");
-      p.className = "qt-empty";
-      p.textContent = "No history yet.";
-      list.appendChild(p);
-      return;
-    }
-    list.innerHTML = "";
-    history.forEach(function(entry) {
-      var item = document.createElement("div");
-      item.className = "qt-history-item";
-      var prev = document.createElement("div");
-      prev.className = "qt-history-preview";
-      prev.textContent = entry.preview || "...";
-      var time = document.createElement("div");
-      time.className = "qt-history-time";
-      time.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleDateString() : "";
-      item.appendChild(prev);
-      item.appendChild(time);
-      item.addEventListener("click", function() {
-        sendToActiveTab({ type: "OPEN_PANEL", text: entry.original });
-        window.close();
-      });
-      list.appendChild(item);
-    });
-  });
-}
-
 function updateKeyStatus() {
-  chrome.storage.local.get(["groq_api_key"], function(data) {
+  chrome.storage.local.get(["gemini_api_key"], function(data) {
     var status = document.getElementById("keyStatus");
-    if (data.groq_api_key) {
-      status.textContent = "Groq key is set.";
+    if (data.gemini_api_key) {
+      status.textContent = "Gemini key is set.";
       status.style.color = "#2e7d32";
     } else {
       status.textContent = "No key saved yet.";
@@ -87,12 +53,12 @@ function updateKeyStatus() {
 function saveKey() {
   var key = document.getElementById("apiKeyInput").value.trim();
   var status = document.getElementById("keyStatus");
-  if (!key || key.indexOf("gsk_") !== 0 || key.length < 20) {
-    status.textContent = "Invalid key. Must start with gsk_";
+  if (!key || key.indexOf("AIza") !== 0 || key.length < 30) {
+    status.textContent = "Invalid key. Must start with AIza";
     status.style.color = "#d32f2f";
     return;
   }
-  chrome.storage.local.set({ groq_api_key: key }, function() {
+  chrome.storage.local.set({ gemini_api_key: key }, function() {
     status.textContent = "Key saved.";
     status.style.color = "#2e7d32";
     document.getElementById("apiKeyInput").value = "";
@@ -101,21 +67,16 @@ function saveKey() {
 
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("tabPresets").addEventListener("click", function() { showTab("presets"); });
-  document.getElementById("tabHistory").addEventListener("click", function() { showTab("history"); });
   document.getElementById("tabSettings").addEventListener("click", function() { showTab("settings"); });
 
   document.getElementById("btn-mild").addEventListener("click", function() { selectPreset("qt-mild"); });
   document.getElementById("btn-comfort").addEventListener("click", function() { selectPreset("qt-comfort"); });
   document.getElementById("btn-focus").addEventListener("click", function() { selectPreset("qt-focus"); });
 
-  document.getElementById("clearHistoryBtn").addEventListener("click", function() {
-    chrome.storage.local.remove(["quiettext_history"], function() { loadHistory(); });
-  });
-
   document.getElementById("saveKeyBtn").addEventListener("click", saveKey);
 
   document.getElementById("openAppBtn").addEventListener("click", function() {
-    chrome.runtime.sendMessage({ type: "OPEN_TAB", url: "https://quiettext.vercel.app/" });
+    chrome.runtime.sendMessage({ type: "OPEN_TAB", url: "https://quiet-text-2-0-offline.vercel.app/" });
     window.close();
   });
 
@@ -134,15 +95,15 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-  chrome.storage.local.get(["qt_active_preset","groq_api_key"], function(data) {
+  chrome.storage.local.get(["qt_active_preset","gemini_api_key"], function(data) {
     if (data.qt_active_preset) {
       activePreset = data.qt_active_preset;
       document.getElementById("masterToggle").checked = true;
       updatePresetUI(activePreset);
     }
-    if (data.groq_api_key) {
+    if (data.gemini_api_key) {
       var s = document.getElementById("keyStatus");
-      s.textContent = "Groq key is set.";
+      s.textContent = "Gemini key is set.";
       s.style.color = "#2e7d32";
     }
   });

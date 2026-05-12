@@ -1,7 +1,4 @@
-// ollama.js — QuietText 2.0
-// All Gemma 4 calls go through here. No AI calls anywhere else.
-// All prompt templates live in PROMPTS — Rule 10.
-// Add this to the top of ollama.js
+// Ollama client and prompt templates
 export const OLLAMA_BASE = 'http://localhost:11434';
 
 const BASE = 'http://localhost:11434';

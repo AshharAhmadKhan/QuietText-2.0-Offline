@@ -20,40 +20,34 @@
       </div>
     </div>
     <p style="font-size:11px;color:#9a9a9f;font-style:italic;padding-left:2px;margin-top:4px;font-family:system-ui,sans-serif;">
-      Gemma 4 reads. Groq simplifies. You understand.
+      Reading made easy. Powered by Gemma 4.
     </p>
   </div>
 </header>
 <div class="qt-tabs" role="tablist">
   <button class="qt-tab active" id="tabPresets" role="tab">Presets</button>
-  <button class="qt-tab" id="tabHistory" role="tab">History</button>
   <button class="qt-tab" id="tabSettings" role="tab">Settings</button>
 </div>
 <div class="qt-tab-content" id="panelPresets" role="tabpanel">
-  <p class="qt-section-label">Choose a reading style</p>
+  <p class="qt-section-label">Pick your reading comfort</p>
   <div class="qt-preset-group">
     <button class="qt-preset-btn" id="btn-mild"><span class="qt-preset-name">Mild</span><span class="qt-preset-desc">17px, subtle spacing</span></button>
     <button class="qt-preset-btn" id="btn-comfort"><span class="qt-preset-name">Comfort</span><span class="qt-preset-desc">19px, relaxed reading</span></button>
     <button class="qt-preset-btn" id="btn-focus"><span class="qt-preset-name">Focus</span><span class="qt-preset-desc">21px, maximum clarity</span></button>
   </div>
-  <p class="qt-hint">Select text on any page, press <strong>Ctrl+Shift+Q</strong> or right-click and choose <strong>Simplify with QuietText 2.0</strong></p>
+  <p class="qt-hint">Highlight text and hit <strong>Ctrl+Shift+Q</strong> for instant simplification</p>
   <button class="qt-open-btn" id="openAppBtn">Open QuietText 2.0</button>
 </div>
-<div class="qt-tab-content qt-hidden" id="panelHistory" role="tabpanel">
-  <p class="qt-section-label">Recent simplifications</p>
-  <div id="historyList" class="qt-history-list"></div>
-  <button class="qt-clear-btn" id="clearHistoryBtn">Clear History</button>
-</div>
 <div class="qt-tab-content qt-hidden" id="panelSettings" role="tabpanel">
-  <p class="qt-section-label">Groq API Key</p>
-  <p class="qt-hint">Get a free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a></p>
+  <p class="qt-section-label">Gemini API Key</p>
+  <p class="qt-hint">Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></p>
   <div class="qt-key-row">
-    <input type="password" id="apiKeyInput" placeholder="gsk_..." class="qt-key-input"/>
+    <input type="password" id="apiKeyInput" placeholder="AIza..." class="qt-key-input"/>
     <button class="qt-save-btn" id="saveKeyBtn">Save</button>
   </div>
   <p id="keyStatus" class="qt-key-status" role="status"></p>
-  <p class="qt-section-label" style="margin-top:16px;">Gemini Key</p>
-  <p class="qt-hint">Add your Gemini key inside the QuietText 2.0 app for images and PDFs.</p>
+  <p class="qt-section-label" style="margin-top:16px;">About</p>
+  <p class="qt-hint">This extension uses Gemini 2.5 Flash for fast text simplification. All processing happens in the cloud via Google's Gemini API.</p>
 </div>
 <script src="popup.js"></script>
 </body>

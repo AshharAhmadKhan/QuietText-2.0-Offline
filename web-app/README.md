@@ -1,54 +1,143 @@
 # QuietText Web App
 
-This is the web interface for QuietText 2.0. It's where the actual text processing happens.
+You have a 50-page PDF. Dense paragraphs. Academic language. You need to understand it by tomorrow.
 
-The app is built with React and runs entirely in your browser. No backend. No database. Everything stays on your device unless you explicitly choose to use online AI models.
+You open it. The words blur. You read the same sentence three times. Nothing sticks.
+
+This is learning with dyslexia.
+
+This app fixes that. Not just for web pages. For everything. PDFs. Images. Textbooks. Assignments. Study guides. It takes complex text and makes it readable. It takes overwhelming documents and makes them manageable.
+
+This is the heart of QuietText 2.0. A full set of reading tools. Built for people who struggle with text. Built to work online when you have internet, offline when you don't. Built to keep your data private.
 
 ## What It Does
 
-### Text Simplification
+### Simplify Anything
 
-Paste any text and get it rewritten in short sentences with simple words. You can choose your reading level (Grade 3, 6, 9, or Adult) and language (English, Hindi, Urdu, Bengali, Arabic, Spanish, French).
+Paste text. Upload a PDF. Take a photo of a printed page. Get it back in short sentences with simple words.
 
-The app shows you before and after readability scores so you can see the difference. Every result uses the OpenDyslexic font, which is designed specifically for dyslexic readers.
+Choose your reading level: Grade 3, 6, 9, or Adult. Choose your language: English, Hindi, Urdu, Bengali, Arabic, Spanish, French.
 
-### Sentence Focus Mode
+The app shows you before and after readability scores. You see the difference. Every result uses OpenDyslexic font. Designed for dyslexic readers. Readable for everyone.
 
-After simplifying text, click the Focus button. The screen goes dark and shows you one sentence at a time in large, centered text. Press Space to advance. Press the left arrow to go back. Press Escape to exit.
+Complex becomes clear in seconds.
 
-This mode helps when you need to concentrate on one idea at a time without the distraction of the full page.
+### Focus Mode
 
-### Assignment Decoder
+You simplified the text. Now you need to read it without distraction.
 
-Students can paste homework instructions and get a numbered list of simple steps. Each step has a checkbox. As you complete steps, a progress bar fills up. When you finish everything, the app celebrates with you.
+Click Focus. The screen goes dark. One sentence appears. Large. Centered. Nothing else.
 
-It turns overwhelming assignments into manageable tasks.
+Press Space to advance. Press left arrow to go back. Press Escape to exit.
 
-### PDF and Image Processing
+One sentence at a time. No distractions.
 
-Upload a PDF or take a photo of a printed page. QuietText reads the text and simplifies it. This works with textbooks, worksheets, letters, anything with text on it.
+### Decode Assignments
 
-Gemma 4 handles this. It can process entire documents without chunking them into pieces, which means the context stays intact.
+Your teacher gives you homework. Five paragraphs of instructions. You don't know where to start.
 
-### Word Glossary
+Paste it into Assignment mode. Get a numbered list of simple steps. Each step has a checkbox. A progress bar shows how far you've come.
 
-Click any word in a simplified result and get an instant definition in plain English. The definition appears in a small popup. Click outside to close it.
+Check off steps as you finish. Watch the bar fill. When you complete everything, the app celebrates with you.
 
-This helps when you encounter an unfamiliar word but don't want to leave the page to look it up.
+Big assignments turn into small steps.
 
-### Q&A
+### Read PDFs and Images
 
-After processing a document, you can ask questions about it. The AI answers based only on what's in the document. If the answer isn't there, it tells you.
+Your textbook is a PDF. Your worksheet is a photo. You can't copy the text.
 
-This is useful for studying or checking your understanding.
+Upload it. QuietText reads it. Simplifies it. Shows it in readable format.
 
-### History
+Gemma 4 handles this. Multimodal vision. 256K context window. It processes entire documents without breaking them into chunks. The context stays intact. The meaning stays clear.
 
-The last 20 simplifications are saved in your browser. You can go back to them anytime. Nothing is sent to a server. It's all stored locally.
+Locked documents become readable text.
 
-## How to Run It
+### Understand Words
 
-### Development
+You're reading simplified text. One word is unfamiliar. You don't want to leave the page.
+
+Click the word. Get an instant definition in plain English. A small popup appears. Click outside to close it.
+
+Stay on the page. Get the definition.
+
+### Ask Questions
+
+You processed a document. Now you want to check your understanding.
+
+Ask a question. The AI answers based only on what's in the document. If the answer isn't there, it tells you.
+
+The answer comes from the document, not made up.
+
+Study better.
+
+### Your History
+
+The last 20 simplifications are saved in your browser. Go back to them anytime.
+
+Nothing sent to a server. All stored locally. Your reading is private.
+
+## How to Use It
+
+### Try It Now
+
+Live demo: [https://quiet-text-2-0-offline.vercel.app](https://quiet-text-2-0-offline.vercel.app)
+
+No installation. No setup. Open it. Paste text. See what it does.
+
+### Get Your API Key
+
+The app needs a Gemini API key to work online. Get one free at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+
+Open the app. Click Settings. Paste your key. Click Save.
+
+The key stays in your browser. It never leaves your device. The app makes direct API calls from your browser to Google. No middleman. No tracking.
+
+### Use It Offline
+
+You don't want to use online APIs. You don't have reliable internet. You want complete privacy.
+
+Install Ollama from [ollama.ai](https://ollama.ai), then:
+
+```bash
+ollama pull gemma4:e2b
+ollama serve
+```
+
+Open the app. Go to Settings. Switch to Offline mode.
+
+Everything runs on your machine. No internet required. Your data never leaves your device.
+
+### From the Extension
+
+Install the Chrome extension. Select text on any webpage. Press Ctrl+Shift+Q (or Cmd+Shift+Q on Mac).
+
+The web app opens in a new tab. Your text is already there. Ready to simplify.
+
+From any page to plain language in two clicks.
+
+## Why It Matters
+
+Existing assistive tech costs money. Most tools need constant internet. Many send your data to the cloud.
+
+This app is free. Works online or offline. Keeps your data private.
+
+This matters for students without reliable internet. For people who can't afford subscriptions. For anyone concerned about privacy. For dyslexic readers who need help with documents, not just web pages. For learners reading in their second language.
+
+Learning shouldn't require money, constant internet, or technical knowledge.
+
+## Privacy
+
+This app doesn't track you.
+
+No analytics. No telemetry. No logging. Your text never touches a server unless you use online AI models, and even then it goes directly from your browser to Google.
+
+In offline mode, nothing leaves your device at all.
+
+Your API key is stored in your browser's localStorage. It never leaves your device.
+
+## For Developers
+
+### Run It Locally
 
 ```bash
 npm install
@@ -57,52 +146,23 @@ npm run dev
 
 Open `http://localhost:5173` in your browser.
 
-### Production Build
+### Build for Production
 
 ```bash
 npm run build
 ```
 
-The build output goes to the `dist/` folder. Deploy it anywhere that serves static files.
+Output goes to `dist/`. Deploy anywhere that serves static files.
 
-### Live Demo
+### Tech Stack
 
-The app is already deployed at [https://quiettext.vercel.app](https://quiettext.vercel.app). You can use it right now without installing anything.
+React 19 with hooks. Vite for build tooling. No TypeScript, just plain JavaScript. No CSS frameworks, just inline styles and globals.css.
 
-## API Keys
+Chart.js for readability metrics. pdfjs-dist for PDF text extraction. OpenDyslexic font served from `/public/fonts/`. localStorage for all data persistence.
 
-The app needs API keys to work in online mode:
+The code follows consistent patterns. Every AI call is wrapped in error handling. Every async operation shows a loading state. Nothing fails silently.
 
-- **Groq** for fast text simplification. Get a free key at [console.groq.com/keys](https://console.groq.com/keys)
-- **Gemini** for images and PDFs. Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-
-Both keys are stored in your browser's localStorage. They never leave your device. The app makes direct API calls from your browser to Groq and Google.
-
-## Offline Mode
-
-If you don't want to use online APIs, you can run everything locally with Ollama:
-
-```bash
-ollama pull gemma4:e2b
-ollama serve
-```
-
-Then open the app, go to Settings, and switch to Offline mode. Everything will run on your machine. No internet required.
-
-## Tech Details
-
-- React 19 with hooks
-- Vite for build tooling
-- No TypeScript, just plain JavaScript
-- No CSS frameworks, just inline styles and a single globals.css
-- Chart.js for readability metrics
-- pdfjs-dist for PDF text extraction
-- OpenDyslexic font served from `/public/fonts/`
-- localStorage for all data persistence
-
-The code follows strict rules defined in `AGENTS.md` at the project root. Every AI call is wrapped in error handling. Every async operation shows a loading state. Nothing fails silently.
-
-## File Structure
+### File Structure
 
 ```
 src/
@@ -117,8 +177,7 @@ src/
 │   ├── Sidebar.jsx
 │   └── AIStatus.jsx
 ├── lib/             Core logic
-│   ├── ai.js        AI router (Groq, Gemini, Ollama)
-│   ├── groq.js      Groq API client
+│   ├── ai.js        AI router (Gemini, Ollama)
 │   ├── gemini.js    Gemini API client
 │   ├── ollama.js    Ollama API client + all prompts
 │   ├── metrics.js   Readability calculations
@@ -130,14 +189,13 @@ src/
 
 All AI prompt templates live in `src/lib/ollama.js` in the `PROMPTS` object. If you want to change how the AI responds, that's where you edit.
 
-## Privacy
-
-This app doesn't track you. There's no analytics, no telemetry, no logging. Your text never touches a server unless you explicitly use online AI models, and even then it goes directly from your browser to Groq or Google.
-
-In offline mode, nothing leaves your device at all.
-
 ## Author
 
-Built by Ashhar Ahmad Khan as part of the Kaggle "Build with Gemma" competition.
+Built by Ashhar Ahmad Khan as my 6th semester minor project at Jamia Hamdard University.
 
-Live demo: [https://quiettext.vercel.app](https://quiettext.vercel.app)
+I believe technology should reduce barriers, not create them. QuietText is my attempt to make reading accessible to everyone, regardless of how their brain processes text.
+
+GitHub: [@AshharAhmadKhan](https://github.com/AshharAhmadKhan)  
+Live Demo: [https://quiet-text-2-0-offline.vercel.app](https://quiet-text-2-0-offline.vercel.app)
+
+Main Project: [QuietText 2.0](https://github.com/AshharAhmadKhan/QuietText-2.0-Offline)

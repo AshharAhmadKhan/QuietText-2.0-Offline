@@ -1,6 +1,4 @@
-// storage.js
-// Chrome storage read/write helpers for result history.
-// Stores max 5 entries. No database. No sync. No server.
+// Chrome storage for result history (max 5 entries, local only)
 
 const HISTORY_KEY = 'quiettext_history';
 const MAX_ENTRIES = 5;
@@ -83,5 +81,3 @@ function processQueue() {
     saveResult(nextEntry);
   }
 }
-
-// Functions available globally in browser context

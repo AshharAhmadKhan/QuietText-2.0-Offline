@@ -1,54 +1,60 @@
 # QuietText 2.0
 
-Reading shouldn't be a struggle. For millions of people with dyslexia, it is.
+The internet isn't built for dyslexic people. Web accessibility guidelines talk about screen readers and color contrast, but they ignore the 1 in 10 people who struggle with dense text, tight spacing, and complex language.
 
-QuietText 2.0 is an AI-powered reading assistant that makes complex text simple, clear, and accessible. It combines a Chrome extension with a web app to help dyslexic readers understand anything they encounter online, from news articles to homework assignments to work documents.
+This project is a successor to [QuietText](https://github.com/AshharAhmadKhan/QuietText). I built the original QuietText as my 6th semester minor project at Jamia Hamdard University. It was a Chrome extension that made webpages readable for dyslexic users. I wanted to help people who struggle with reading. But I realized something: people needed help beyond web pages. They needed to read PDFs, extract text from images, and work offline when internet wasn't available or affordable.
 
-This is the successor to [QuietText v1](https://github.com/AshharAhmadKhan/QuietText). The original version helped thousands of users, but it had a critical limitation: it required an internet connection and couldn't process images or PDFs. Version 2.0 fixes that. Built with Gemma 4, it works completely offline and can read text from photos and scanned documents. Nothing leaves your device unless you choose otherwise.
+Then Gemma 4 came out.
 
-## Why This Exists
+QuietText 2.0 is a complete rebuild. It's a two-part system: a Chrome extension for the web, and a web app that creates a full learning ecosystem. Upload a photo of your textbook. Paste a 50-page PDF. Ask questions about what you're reading. Break down complex assignments into simple steps. It works online when you have internet, and works just as well offline when you don't. Your data never leaves your device unless you choose otherwise.
 
-I built QuietText because reading shouldn't be gatekept by complexity. Dyslexia affects 1 in 10 people, but most content online is written for neurotypical readers. Dense paragraphs, academic jargon, and walls of text create unnecessary barriers.
+## The Journey
 
-QuietText removes those barriers. It doesn't dumb things down. It makes them clear.
+QuietText v1 was a Chrome extension. It applied the OpenDyslexic font, adjusted spacing, and simplified text on web pages. It worked, but it had limits. No PDFs. No images. No offline mode. People needed more.
+
+Gemma 4 changed everything. Multimodal vision for reading images and PDFs. 256K context window for processing entire documents without chunking. Runs locally on consumer hardware. I rebuilt QuietText from the ground up.
+
+QuietText 2.0 is accessibility built for people who actually need it. It's free. It's private. It works whether you have internet or not. And it helps anyone who struggles with complex text, whether that's dyslexia, reading in a second language, or just trying to understand dense academic papers.
 
 ## What It Does
 
-QuietText has two parts that work together:
-
 ### The Extension
 
-The Chrome extension lives in your browser and makes any webpage easier to read. Select text, right-click, and send it to QuietText. Or press Ctrl+Shift+Q. The extension also applies the OpenDyslexic font to any page and offers reading presets that adjust spacing and contrast.
+Makes any webpage easier to read. Apply reading presets, adjust spacing, or send text to the web app for simplification.
 
-It's designed to be invisible until you need it. No popups, no distractions, just help when you ask for it.
-
-[See extension features](extension/README.md)
+[Extension details](extension/README.md)
 
 ### The Web App
 
-The web app is where the real work happens. Paste text, upload a PDF, or take a photo of a printed page. QuietText simplifies it into short sentences and plain language. You can ask questions about what you're reading, break homework into simple steps, or focus on one sentence at a time.
+A complete learning ecosystem. Simplify text, process PDFs and images, decode assignments, ask questions about documents. Works online when you're connected, works offline when you're not.
 
-It works online with Groq and Gemini for speed, or completely offline with Ollama. Your choice. Your data never leaves your device in offline mode.
+[Web app details](web-app/README.md)
 
-[See web app features](web-app/README.md)
+## Why It Matters
+
+Existing assistive tech costs $50 to $200 per month. Many tools require constant internet. Most send your data to the cloud. QuietText 2.0 is free, works with or without internet, and keeps your data private.
+
+This matters for students in rural areas without reliable internet. For people who can't afford subscription services. For anyone concerned about privacy. For dyslexic readers who need help everywhere, not just on web pages. For learners reading in their second language.
+
+Reading shouldn't require money, constant internet, or a computer science degree.
 
 ## How It Works
 
-QuietText uses three AI models depending on what you need:
+Gemma 4 handles images, PDFs, and long documents. Its multimodal capabilities and 256K context window make offline accessibility possible.
 
-- Groq handles fast text simplification. Most requests finish in 1-2 seconds.
-- Gemma 4 handles images, PDFs, and long documents. It can read text from photos and process entire chapters without chunking.
-- Ollama runs Gemma 4 locally on your machine. Fully offline. Nothing sent to the cloud.
+Gemini 2.5 Flash provides fast text simplification when you're online. Most requests finish in 2-3 seconds.
 
-If Groq times out or hits a rate limit, Gemma 4 automatically takes over. You never see an error. The system just works.
+Ollama runs Gemma 4 locally on your machine for complete offline operation. Nothing sent to the cloud.
+
+The system automatically picks the best model for what you're doing. It picks the right tool automatically.
 
 ## Getting Started
 
-### Try the Web App
+### Try It Now
 
-Live demo: [https://quiettext.vercel.app](https://quiettext.vercel.app)
+Live demo: [https://quiet-text-2-0-offline.vercel.app](https://quiet-text-2-0-offline.vercel.app)
 
-No installation needed. Open it, paste text, and see what it does.
+No installation needed. Open it, paste text, see what it does.
 
 ### Install the Extension
 
@@ -70,28 +76,25 @@ Open the web app, switch to Offline mode in settings, and everything runs locall
 
 ## Built For
 
-This project was created for the Kaggle "Build with Gemma: Multimodal and Long Context" competition. It targets the Digital Equity and Inclusivity track because accessibility isn't a nice-to-have. It's a requirement.
+People who need it.
 
-Gemma 4's multimodal capabilities made features possible that weren't feasible in v1. Being able to read text from a photo of a textbook page, fully offline, changes what's possible for students who can't afford expensive assistive tech.
+Students struggling with dense textbooks. Dyslexic readers navigating the web. People in rural areas without reliable internet. Anyone who can't afford expensive assistive tech. Learners reading in their second language.
+
+Accessibility isn't a nice-to-have. It's a requirement.
 
 ## Tech Stack
 
-- React 19 + Vite for the web app
-- Vanilla JavaScript for the extension
-- Groq (Llama 3.1), Gemini (Gemma 4), and Ollama for AI
-- OpenDyslexic font for readability
-- Chart.js for metrics visualization
-- Everything runs client-side. No backend. No tracking.
+React 19 + Vite for the web app. Vanilla JavaScript for the extension. Gemini and Gemma 4 via API, Ollama for offline. OpenDyslexic font for readability. Chart.js for metrics. Everything runs client-side. No backend. No tracking.
 
 ## Author
 
-Built by Ashhar Ahmad Khan.
+Built by Ashhar Ahmad Khan as a 6th semester minor project at Jamia Hamdard University.
 
-I'm a developer who believes technology should reduce barriers, not create them. QuietText is my attempt to make reading accessible to everyone, regardless of how their brain processes text.
+I believe technology should reduce barriers, not create them. QuietText is my attempt to make reading accessible to everyone, regardless of how their brain processes text.
 
-- GitHub: [@AshharAhmadKhan](https://github.com/AshharAhmadKhan)
-- Live Demo: [https://quiettext.vercel.app](https://quiettext.vercel.app)
+GitHub: [@AshharAhmadKhan](https://github.com/AshharAhmadKhan)  
+Live Demo: [https://quiet-text-2-0-offline.vercel.app](https://quiet-text-2-0-offline.vercel.app)
 
 ## License
 
-MIT License. Use it, modify it, share it. Just keep it accessible.
+Apache 2.0. Same license as Gemma 4. Use it, modify it, share it. Just keep it accessible.

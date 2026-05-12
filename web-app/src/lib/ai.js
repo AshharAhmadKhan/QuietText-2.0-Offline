@@ -1,29 +1,17 @@
-// ai.js — unified AI router
-//
-// TEXT:    Groq first (5s timeout), Gemma 4 auto-fallback for long text
-// IMAGES:  Gemma 4 vision (only model that can read images)
-// PDFs:    Gemma 4 (256K context, handles scanned docs)
-// QA/STUDY/ASSIGNMENT: Gemma 4 (better reasoning)
-// OFFLINE: Ollama gemma4:e2b (fully local, nothing leaves device)
+// Routes requests to Gemini (online) or Ollama (offline)
+// Text: Gemini 2.5 Flash | Images/PDFs: Gemma 4 | Offline: Ollama gemma4:e2b
 
-import { callGroq, checkGroq }     from "./groq";
 import { callGemini, checkGemini, GEMINI_MODELS } from "./gemini";
 import { callOllama, checkOllama, PROMPTS }        from "./ollama";
 
 export { PROMPTS };
 
-// --- Storage helpers ---
 export const getAIMode    = () => localStorage.getItem("qt2_ai_mode") || "online";
 export const setAIMode    = (m) => localStorage.setItem("qt2_ai_mode", m);
-export const getGroqKey   = () => localStorage.getItem("qt2_groq_key") || "";
-export const saveGroqKey  = (k) => localStorage.setItem("qt2_groq_key", k);
 export const getGeminiKey = () => localStorage.getItem("qt2_gemini_key") || "";
-export const saveGeminiKey= (k) => localStorage.setItem("qt2_gemini_key", k);
+export const saveGeminiKey= (k) => { localStorage.setItem("qt2_gemini_key", k); window.dispatchEvent(new CustomEvent("qt-key-saved", { detail: { key: "gemini", value: k } })); };
 
-// purposes that need Gemini's stronger reasoning
 const GEMINI_PURPOSES = new Set(["qa", "studyGuide", "assignment", "examQuestions", "checkAnswers"]);
-
-// --- Main router ---
 export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = "", purpose = "text", history = [] }) {
   const mode = getAIMode();
 
@@ -50,41 +38,30 @@ export async function callAI({ system, prompt, images = [], pdf = null, ollamaMo
   // QA / Study Guide / Assignment → Gemma 4 (stronger reasoning needed)
   if (GEMINI_PURPOSES.has(purpose)) {
     const geminiKey = getGeminiKey();
-    if (geminiKey) {
-      try {
-        return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
-      } catch (e) {
-        // fall through to Groq if Gemini fails
-      }
-    }
+    if (!geminiKey) throw new Error("Add your Gemini API key in Settings.");
+    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
   }
 
-  // Text → Groq first (5s timeout), then Gemma 4 fallback
-  const groqKey = getGroqKey();
-  if (!groqKey) throw new Error("Add your Groq API key in Settings for fast text responses.");
-
+  // Text → Gemini 2.5 Flash (1.78s avg, fast and reliable)
+  // Fallback to Gemma 4 if rate limit hit
+  const geminiKey = getGeminiKey();
+  if (!geminiKey) throw new Error("Add your Gemini API key in Settings for text processing.");
+  
   try {
-    return await callGroq({ apiKey: groqKey, system, prompt });
-  } catch (groqErr) {
-    const msg = groqErr.message.toLowerCase();
-    const shouldFallback = msg.includes("rate limit")
-      || msg.includes("429")
-      || msg.includes("too large")
-      || msg.includes("context")
-      || msg.includes("token")
-      || msg.includes("length")
-      || msg.includes("timed out")
-      || msg.includes("abort");
-    if (!shouldFallback) throw groqErr;
-
-    // Gemma 4 fallback — handles long text that Groq cannot
-    const geminiKey = getGeminiKey();
-    if (!geminiKey) throw groqErr;
-    try {
-      return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
-    } catch {
-      throw groqErr;
+    return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.PRIMARY, system, prompt });
+  } catch (error) {
+    // Check if it's a rate limit error
+    const errMsg = error.message?.toLowerCase() || '';
+    const isRateLimit = errMsg.includes('rate limit') || errMsg.includes('429') || errMsg.includes('quota');
+    
+    if (isRateLimit) {
+      // Fallback to Gemma 4 silently
+      console.log('Gemini rate limit hit, falling back to Gemma 4...');
+      return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
     }
+    
+    // Re-throw other errors
+    throw error;
   }
 }
 
@@ -95,7 +72,7 @@ export async function checkAIStatus(ollamaModel = "") {
     const r = await checkOllama();
     return { mode: "ollama", ...r };
   }
-  const groqKey = getGroqKey();
-  const r = await checkGroq(groqKey);
+  const geminiKey = getGeminiKey();
+  const r = await checkGemini(geminiKey);
   return { mode: "online", ...r };
 }

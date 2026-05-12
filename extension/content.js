@@ -47,7 +47,7 @@ function throttle(fn, ms) {
   };
 }
 
-// Inject the floating AI panel
+// Panel injection
 function injectPanel(selectedText, restored) {
   // Guard: check DOM existence, not just flag
   const existingIframe = document.getElementById('qt-panel-iframe');

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { callAI, PROMPTS, getAIMode, getGroqKey } from '../lib/ai';
+import { callAI, PROMPTS, getAIMode, getGeminiKey } from '../lib/ai';
 import { saveWord } from '../lib/storage';
 
 function getFontForLanguage(language) {
@@ -68,7 +68,7 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
       }
     };
     fetchDef();
-  }, [word]);
+  }, [word, ollamaModel]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -78,52 +78,89 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
-  // Position popup just below the clicked word, anchored to scroll container
-  const containerRect = popupRef.current?.closest('[data-result-container]')?.getBoundingClientRect() || { left: 0, top: 0 };
-  const relLeft = Math.min(anchorRect.left - containerRect.left, window.innerWidth - 290);
-  const relTop = anchorRect.bottom - containerRect.top + 6;
+  // Position popup just below the clicked word, matching smart highlight tooltip style
+  // Ensure it stays within viewport bounds
+  const left = Math.max(10, Math.min(anchorRect.left, window.innerWidth - 280));
+  const top = anchorRect.bottom + 8;
+  
   const style = {
-    position: 'absolute',
-    left: Math.max(0, relLeft),
-    top: relTop,
-    width: 260,
-    background: '#3d3428',
+    position: 'fixed',
+    left: left + 'px',
+    top: top + 'px',
+    minWidth: 200,
+    maxWidth: 360,
+    background: 'linear-gradient(135deg, #3d3428 0%, #5a4d3a 100%)',
     color: '#F2F0EB',
     borderRadius: 10,
-    padding: '12px 14px',
+    padding: '12px 16px',
     fontSize: 13,
-    lineHeight: 1.6,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-    zIndex: 9999,
-    fontFamily: 'system-ui, sans-serif',
+    lineHeight: 1.7,
+    boxShadow: '0 6px 24px rgba(0,0,0,0.28)',
+    zIndex: 10000,
+    fontFamily: 'OpenDyslexic, sans-serif',
+    animation: 'wordPopupIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both',
   };
 
   return (
-    <div ref={popupRef} style={style}>
-      <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#a88f6b' }}>
-        {word}
-      </div>
-      {loading && <div style={{ color: '#9a9a9f', fontSize: 12 }}>Defining...</div>}
-      {error   && <div style={{ color: '#ff8a80', fontSize: 12 }}>{error}</div>}
-      {def     && <div>{def}</div>}
-      <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-        <button onClick={onClose} style={{
-          background: 'none', border: '1px solid rgba(255,255,255,0.2)',
-          borderRadius: 6, color: '#9a9a9f', fontSize: 11, padding: '3px 8px',
-          cursor: 'pointer', fontFamily: 'system-ui, sans-serif'
-        }}>Close</button>
-        {def && !saved && (
-          <button onClick={() => { saveWord(word, def); setSaved(true); }} style={{
-            background: 'rgba(168,143,107,0.25)', border: '1px solid rgba(168,143,107,0.5)',
-            borderRadius: 6, color: '#a88f6b', fontSize: 11, padding: '3px 8px',
-            cursor: 'pointer', fontFamily: 'system-ui, sans-serif'
-          }}>Save to Word Bank</button>
+    <>
+      <style>{`
+        @keyframes wordPopupIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div ref={popupRef} style={style}>
+        {/* Arrow pointing up to the word */}
+        <div style={{
+          position: 'absolute',
+          top: -6,
+          left: Math.min(18, anchorRect.left - left + anchorRect.width / 2),
+          width: 12,
+          height: 12,
+          background: '#3d3428',
+          transform: 'rotate(45deg)',
+          borderRadius: 2,
+        }} />
+        
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#a88f6b', position: 'relative' }}>
+          {word}
+        </div>
+        
+        {loading && (
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '2px 0' }}>
+            <span style={{ width: 7, height: 7, background: '#F2F0EB', borderRadius: '50%', opacity: 0.4, animation: 'dotBounce 1.2s ease-in-out infinite' }} />
+            <span style={{ width: 7, height: 7, background: '#F2F0EB', borderRadius: '50%', opacity: 0.4, animation: 'dotBounce 1.2s ease-in-out 0.2s infinite' }} />
+            <span style={{ width: 7, height: 7, background: '#F2F0EB', borderRadius: '50%', opacity: 0.4, animation: 'dotBounce 1.2s ease-in-out 0.4s infinite' }} />
+          </div>
         )}
-        {saved && (
-          <span style={{ fontSize: 11, color: '#10b981', padding: '3px 0', fontFamily: 'system-ui, sans-serif' }}>Saved</span>
-        )}
+        {error && <div style={{ color: '#ff8a80', fontSize: 12 }}>{error}</div>}
+        {def && <div style={{ marginBottom: 8, wordBreak: 'break-word', position: 'relative' }}>{def}</div>}
+        
+        <div style={{ display: 'flex', gap: 6, marginTop: 10, position: 'relative' }}>
+          <button onClick={onClose} style={{
+            background: 'none', border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 6, color: '#9a9a9f', fontSize: 11, padding: '4px 10px',
+            cursor: 'pointer', fontFamily: 'system-ui, sans-serif', fontWeight: 500,
+          }}>Close</button>
+          {def && !saved && (
+            <button onClick={() => { saveWord(word, def); setSaved(true); }} style={{
+              background: 'rgba(168,143,107,0.25)', border: '1px solid rgba(168,143,107,0.5)',
+              borderRadius: 6, color: '#a88f6b', fontSize: 11, padding: '4px 10px',
+              cursor: 'pointer', fontFamily: 'system-ui, sans-serif', fontWeight: 500,
+            }}>Save to Word Bank</button>
+          )}
+          {saved && (
+            <span style={{ fontSize: 11, color: '#10b981', padding: '4px 0', fontFamily: 'system-ui, sans-serif' }}>✓ Saved</span>
+          )}
+        </div>
       </div>
-    </div>
+      <style>{`
+        @keyframes dotBounce {
+          0%, 80%, 100% { opacity: 0.4; transform: scale(1); }
+          40% { opacity: 1; transform: scale(1.3); }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -211,7 +248,15 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
   const sentences = getSentences(result);
 
   useEffect(() => {
+    if (!focusMode) return;
+    
     const handler = (e) => {
+      // Don't capture keys when user is typing in input/textarea
+      const target = e.target;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        return;
+      }
+      
       if (e.key === ' ' || e.key === 'ArrowRight') {
         e.preventDefault();
         setFocusIdx(i => Math.min(i + 1, sentences.length - 1));
@@ -227,8 +272,10 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
   }, [focusMode, sentences.length]);
 
   const handleWordClick = useCallback((word, rect) => {
+    // Don't show popup in focus mode
+    if (focusMode) return;
     setPopup({ word, rect });
-  }, []);
+  }, [focusMode]);
 
   const handleCopy = async () => {
     const text = resultDomRef.current?.innerText || resultDomRef.current?.textContent || '';
@@ -363,13 +410,18 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
 
 
       {focusMode && sentences.length > 0 && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(28,28,28,0.92)', zIndex: 9998,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: '40px 24px',
-        }}>
+        <div 
+          onClick={(e) => {
+            // Close focus mode if clicking the dark overlay (not the content)
+            if (e.target === e.currentTarget) setFocusMode(false);
+          }}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(28,28,28,0.92)', zIndex: 9998,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: '40px 24px',
+          }}>
           <div style={{ width: '100%', maxWidth: 680 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
               <span style={{ fontSize: 12, color: '#9a9a9f', fontFamily: 'system-ui, sans-serif', letterSpacing: '0.08em' }}>
@@ -401,44 +453,69 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
               {sentences[focusIdx]}
             </div>
 
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setFocusIdx(i => Math.max(i - 1, 0))}
                 disabled={focusIdx === 0}
+                onMouseEnter={e => { if (focusIdx !== 0) { e.currentTarget.style.background = '#3A3A3C'; e.currentTarget.style.borderColor = '#4A4A4C'; } }}
+                onMouseLeave={e => { if (focusIdx !== 0) { e.currentTarget.style.background = '#2C2C2E'; e.currentTarget.style.borderColor = '#3A3A3C'; } }}
                 style={{
-                  background: focusIdx === 0 ? 'none' : '#2C2C2E',
-                  border: '1px solid #3A3A3C', borderRadius: 8,
+                  background: focusIdx === 0 ? 'transparent' : '#2C2C2E',
+                  border: '1px solid #3A3A3C', 
+                  borderRadius: 6,
                   color: focusIdx === 0 ? '#3A3A3C' : '#F2F0EB',
-                  fontSize: 13, padding: '10px 24px', cursor: focusIdx === 0 ? 'not-allowed' : 'pointer',
-                  fontFamily: 'system-ui, sans-serif', fontWeight: 600,
+                  fontSize: 12, 
+                  padding: '8px 16px', 
+                  cursor: focusIdx === 0 ? 'not-allowed' : 'pointer',
+                  fontFamily: 'system-ui, sans-serif', 
+                  fontWeight: 600,
                   transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
                 }}>
-                Previous
+                ← Previous
               </button>
 
               {focusIdx < sentences.length - 1 ? (
                 <button
                   onClick={() => setFocusIdx(i => i + 1)}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#b89d7a'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#a88f6b'; e.currentTarget.style.transform = 'translateY(0)'; }}
                   style={{
-                    background: '#a88f6b', border: 'none', borderRadius: 8,
-                    color: '#F2F0EB', fontSize: 14, padding: '12px 36px',
-                    cursor: 'pointer', fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                    background: '#a88f6b', 
+                    border: 'none', 
+                    borderRadius: 6,
+                    color: '#F2F0EB', 
+                    fontSize: 13, 
+                    padding: '9px 24px',
+                    cursor: 'pointer', 
+                    fontFamily: 'system-ui, sans-serif', 
+                    fontWeight: 700,
                     boxShadow: '0 4px 16px rgba(168,143,107,0.4)',
                     transition: 'all 0.15s',
+                    whiteSpace: 'nowrap',
                   }}>
-                  Next sentence
+                  Next →
                 </button>
               ) : (
                 <button
                   onClick={() => setFocusMode(false)}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#14d99d'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#10b981'; e.currentTarget.style.transform = 'translateY(0)'; }}
                   style={{
-                    background: '#10b981', border: 'none', borderRadius: 8,
-                    color: '#fff', fontSize: 14, padding: '12px 36px',
-                    cursor: 'pointer', fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                    background: '#10b981', 
+                    border: 'none', 
+                    borderRadius: 6,
+                    color: '#fff', 
+                    fontSize: 13, 
+                    padding: '9px 24px',
+                    cursor: 'pointer', 
+                    fontFamily: 'system-ui, sans-serif', 
+                    fontWeight: 700,
                     boxShadow: '0 4px 16px rgba(16,185,129,0.4)',
                     transition: 'all 0.15s',
+                    whiteSpace: 'nowrap',
                   }}>
-                  Done reading
+                  ✓ Done
                 </button>
               )}
             </div>

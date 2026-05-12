@@ -2,16 +2,16 @@ const CHAR_WARN  = 350000;
 const CHAR_LIMIT = 400000;
 
 const LEVEL_DESCRIPTIONS = {
-  grade3: 'Grade 3 — 8-9 year old reading level',
-  grade6: 'Grade 6 — 11-12 year old reading level',
-  grade9: 'Grade 9 — 14-15 year old reading level',
-  adult:  'Adult — standard reading level',
+  grade3: 'Grade 3 - 8-9 year old reading level',
+  grade6: 'Grade 6 - 11-12 year old reading level',
+  grade9: 'Grade 9 - 14-15 year old reading level',
+  adult:  'Adult - standard reading level',
 };
 
 const STYLE_DESCRIPTIONS = {
-  plain:   'Plain — flowing explanation in simple sentences',
-  bullets: 'Bullets — numbered list of key points',
-  steps:   'Steps — numbered step-by-step breakdown',
+  plain:   'Plain - flowing explanation in simple sentences',
+  bullets: 'Bullets - numbered list of key points',
+  steps:   'Steps - numbered step-by-step breakdown',
 };
 
 export default function InputPanel({
@@ -113,8 +113,8 @@ export default function InputPanel({
             fontWeight: nearLimit ? 600 : 400,
           }}>
             {charCount.toLocaleString()} / {CHAR_LIMIT.toLocaleString()} chars
-            {nearLimit && !atLimit && ' — approaching limit'}
-            {atLimit && ' — will be truncated'}
+            {nearLimit && !atLimit && ' (approaching limit)'}
+            {atLimit && ' (will be truncated)'}
           </span>
         )}
       </div>

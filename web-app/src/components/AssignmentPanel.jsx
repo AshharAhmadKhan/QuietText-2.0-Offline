@@ -19,14 +19,38 @@ export default function AssignmentPanel({ ollamaModel }) {
       const result = await callAI({
         ollamaModel,
         system: PROMPTS.assignment,
-        purpose: 'assignment',
         prompt: text,
+        purpose: 'assignment'
       });
-      const raw = result.split(String.fromCharCode(10));
-      const parsed = raw.map(l => l.trim()).filter(l => l && /^[0-9]+\./.test(l));
-      setSteps(parsed);
+      
+      // Extract the YOUR STEPS section
+      const stepsMatch = result.match(/YOUR STEPS?:(.*?)(?:TOTAL TIME:|$)/is);
+      if (!stepsMatch) {
+        throw new Error('Could not find YOUR STEPS section in response');
+      }
+      
+      const stepsText = stepsMatch[1];
+      
+      // Split by time brackets to find individual steps
+      // Pattern: text [about X minutes]
+      const stepMatches = stepsText.matchAll(/([^[\]]+)\[about[^\]]+\]/g);
+      const stepLines = [];
+      let stepNum = 1;
+      
+      for (const match of stepMatches) {
+        const stepText = match[1].trim();
+        if (stepText) {
+          stepLines.push(`${stepNum}. ${stepText}`);
+          stepNum++;
+        }
+      }
+      
+      if (stepLines.length === 0) {
+        throw new Error('No steps found. Try rephrasing your assignment.');
+      }
+      setSteps(stepLines);
     } catch (e) {
-      setError(e.message);
+      setError(e.message || 'Failed to decode assignment');
     } finally {
       setLoading(false);
     }

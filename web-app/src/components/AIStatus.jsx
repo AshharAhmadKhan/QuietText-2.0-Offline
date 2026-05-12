@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
-import { getAIMode, setAIMode, getGroqKey, saveGroqKey, getGeminiKey, saveGeminiKey } from '../lib/ai';
+import { getAIMode, setAIMode, getGeminiKey, saveGeminiKey } from '../lib/ai';
 import { checkOllama } from '../lib/ollama';
-import { checkGroq } from '../lib/groq';
+import { checkGemini } from '../lib/gemini';
 
 const GEMMA_MODELS = ['gemma4:e4b', 'gemma4:latest', 'gemma4:9b', 'gemma4:e2b', 'gemma4:2b'];
 
 export default function AIStatus({ ollamaModel, onOllamaModelChange, onModeChange }) {
   const [mode,         setMode]         = useState(getAIMode());
-  const [groqOk,       setGroqOk]       = useState(null);
+  const [geminiOk,     setGeminiOk]     = useState(null);
   const [ollamaOk,     setOllamaOk]     = useState(null);
   const [ollamaModels, setOllamaModels] = useState([]);
   const [ollamaError,  setOllamaError]  = useState('');
-  const [showGroqKey,  setShowGroqKey]  = useState(false);
   const [showGemKey,   setShowGemKey]   = useState(false);
-  const [groqDraft,    setGroqDraft]    = useState('');
   const [gemDraft,     setGemDraft]     = useState('');
 
   const check = async () => {
@@ -22,11 +20,11 @@ export default function AIStatus({ ollamaModel, onOllamaModelChange, onModeChang
       setOllamaOk(null);
       const r = await checkOllama();
       if (r.ok) {
-        const gemma = r.models.filter(x => GEMMA_MODELS.includes(x) || x.startsWith('gemma'));
+        const gemma = r.models.filter(x => x.startsWith('gemma4'));
         setOllamaModels(gemma);
         if (gemma.length === 0) {
           setOllamaOk(false);
-          setOllamaError('No Gemma models. Run: ollama pull gemma4:e2b');
+          setOllamaError('No Gemma 4 models. Run: ollama pull gemma4:e4b');
         } else {
           if (!ollamaModel || !gemma.includes(ollamaModel)) onOllamaModelChange(gemma[0]);
           setOllamaOk(true); setOllamaError('');
@@ -35,9 +33,9 @@ export default function AIStatus({ ollamaModel, onOllamaModelChange, onModeChang
         setOllamaOk(false); setOllamaError(r.error || 'Ollama offline');
       }
     } else {
-      setGroqOk(null);
-      const r = await checkGroq(getGroqKey());
-      setGroqOk(r.ok);
+      setGeminiOk(null);
+      const r = await checkGemini(getGeminiKey());
+      setGeminiOk(r.ok);
     }
   };
 
@@ -49,10 +47,8 @@ export default function AIStatus({ ollamaModel, onOllamaModelChange, onModeChang
     if (onModeChange) onModeChange(newMode);
   };
 
-  const saveGK = () => { saveGroqKey(groqDraft.trim()); setShowGroqKey(false); setGroqDraft(''); setGroqOk(true); };
-  const saveGem = () => { saveGeminiKey(gemDraft.trim()); setShowGemKey(false); setGemDraft(''); };
+  const saveGem = () => { saveGeminiKey(gemDraft.trim()); setShowGemKey(false); setGemDraft(''); setGeminiOk(true); };
 
-  const hasGroq = !!getGroqKey();
   const hasGem  = !!getGeminiKey();
 
   const pill = (bg, color, border, label) => (
@@ -80,16 +76,12 @@ export default function AIStatus({ ollamaModel, onOllamaModelChange, onModeChang
       {mode === 'online' && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: groqOk === null ? '#6E6E73' : groqOk ? '#10b981' : '#ef4444', display: 'inline-block' }} />
-            <span style={{ color: groqOk ? '#10b981' : '#6E6E73' }}>
-              {groqOk === null ? 'Checking Groq...' : groqOk ? '✓ Groq ready (text)' : hasGroq ? '✗ Groq key invalid' : '✗ No Groq key'}
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: geminiOk === null ? '#6E6E73' : geminiOk ? '#10b981' : '#ef4444', display: 'inline-block' }} />
+            <span style={{ color: geminiOk ? '#10b981' : '#6E6E73' }}>
+              {geminiOk === null ? 'Checking...' : geminiOk ? '✓ Ready to go!' : hasGem ? '✗ Gemini key invalid' : '✗ No Gemini key'}
             </span>
           </div>
-          {pill(hasGem ? '#e8f5e9' : '#fff3e0', hasGem ? '#2e7d32' : '#a88f6b', `1px solid ${hasGem ? '#a5d6a7' : '#a88f6b'}`, hasGem ? '✓ Gemma 4 (your eyes)' : '⚠ Add Gemini key for images and PDF')}
 
-          <button onClick={() => setShowGroqKey(v => !v)} style={{ fontSize: 10, color: '#6E6E73', background: 'none', border: '1px solid #E8E6E1', borderRadius: 4, padding: '2px 7px', cursor: 'pointer' }}>
-            {hasGroq ? '🔑 Groq' : '🔑 Add Groq Key'}
-          </button>
           <button onClick={() => setShowGemKey(v => !v)} style={{ fontSize: 10, color: '#6E6E73', background: 'none', border: '1px solid #E8E6E1', borderRadius: 4, padding: '2px 7px', cursor: 'pointer' }}>
             {hasGem ? '🔑 Gemini' : '🔑 Add Gemini Key'}
           </button>
@@ -112,17 +104,6 @@ export default function AIStatus({ ollamaModel, onOllamaModelChange, onModeChang
             </select>
           )}
         </>
-      )}
-
-      {/* Groq key input */}
-      {showGroqKey && (
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', width: '100%', marginTop: 4 }}>
-          <input type="password" value={groqDraft} onChange={e => setGroqDraft(e.target.value)}
-            placeholder="Groq API key (gsk_...)" onKeyDown={e => e.key === 'Enter' && saveGK()}
-            style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #E8E6E1', fontSize: 12, outline: 'none', fontFamily: 'monospace' }} autoFocus />
-          <button onClick={saveGK} style={{ padding: '6px 14px', background: '#a88f6b', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Save</button>
-          <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#a88f6b', textDecoration: 'underline' }}>Get free key ↗</a>
-        </div>
       )}
 
       {/* Gemini key input */}

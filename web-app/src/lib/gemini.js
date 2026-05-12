@@ -1,11 +1,10 @@
-// gemini.js — Gemma 4 via Google AI Studio
-// Used ONLY for image/vision requests (text goes to Groq for speed)
+// gemini.js — Gemini API for text, vision, and PDF processing
 // thinkingLevel: "MINIMAL" — only valid values are MINIMAL and HIGH
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
 export const GEMINI_MODELS = {
-  PRIMARY: 'gemma-4-26b-a4b-it',
-  VISION:  'gemma-4-26b-a4b-it',
+  PRIMARY: 'gemini-2.5-flash',      // Fast text processing (1.78s avg)
+  VISION:  'gemma-4-26b-a4b-it',    // Vision + long context
 };
 
 export async function callGemini({ apiKey, model, system, prompt, imageBase64 = null, mimeType = null, pdfBase64 = null }) {
@@ -22,14 +21,21 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
   }
   parts.push({ text: prompt });
 
+  // Only Gemma 4 supports thinkingConfig, not Gemini 2.5 Flash
+  const generationConfig = {
+    temperature: 0.3,
+    maxOutputTokens: isPDF ? 4096 : 1024
+  };
+  
+  // Add thinkingConfig only for Gemma 4 models
+  if (model.includes('gemma')) {
+    generationConfig.thinkingConfig = { thinkingLevel: 'MINIMAL' };
+  }
+
   const body = {
     system_instruction: { parts: [{ text: system }] },
     contents: [{ role: 'user', parts }],
-    generationConfig: {
-      temperature: 0.3,
-      maxOutputTokens: isPDF ? 4096 : 1024,
-      thinkingConfig: { thinkingLevel: 'MINIMAL' }
-    }
+    generationConfig
   };
 
   const controller = new AbortController();

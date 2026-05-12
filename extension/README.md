@@ -1,111 +1,107 @@
-# QuietText Chrome Extension
+# QuietText Extension
 
-This extension makes any webpage easier to read. It's designed to be invisible until you need it.
+You're reading an article. The text is cramped. The words blur together. You lose your place. Again.
+
+For dyslexic readers, every webpage is a struggle. Dense text. Tight spacing. Words that blur together.
+
+This extension fixes that. It makes any webpage readable. Instantly. On any site. It's invisible until you need it, then it's there.
+
+This was the original QuietText. My 6th semester minor project. I wanted to help people who struggle with reading. Now it's part of QuietText 2.0, working alongside the web app to make reading accessible everywhere.
 
 ## What It Does
 
-### Send Text to QuietText
+### Reading Presets
 
-Select any text on any webpage. Right-click and choose "Send to QuietText 2.0" from the context menu. Or press Ctrl+Shift+Q. A new tab opens with the web app and your selected text already loaded.
+Click the extension icon. Choose how you want to read:
 
-This works on news sites, Wikipedia, documentation, social media, anywhere. If you can select it, you can simplify it.
+**Mild**: Subtle changes. 17px text, relaxed spacing. For when you just need a little help.
 
-### Apply OpenDyslexic Font
+**Comfort**: Moderate changes. 19px OpenDyslexic font, comfortable line height. For everyday reading.
 
-Click the extension icon in your toolbar. Choose a reading preset:
+**Focus**: Maximum readability. 21px text, wide spacing, high contrast. For when you need complete clarity.
 
-- **Mild** - Subtle changes. Slightly larger text and better spacing.
-- **Comfort** - Moderate changes. OpenDyslexic font with comfortable line height.
-- **Focus** - Maximum readability. Large text, wide spacing, high contrast.
+One click. Any page transforms. Any page becomes readable.
 
-The changes apply instantly to the current page. Refresh to reset.
+### Send to QuietText
+
+Select any text on any page. Right-click and choose "Send to QuietText 2.0". Or press Ctrl+Shift+Q.
+
+A new tab opens with the web app. Your text is already there, ready to simplify.
+
+From any page to plain language in two clicks.
 
 ### Smart Highlight Tooltip
 
-Highlight any text on a page and wait 2 seconds. A small tooltip appears with a simplified explanation of what you highlighted. This uses Groq for fast responses.
+Highlight any text. Wait 2 seconds. A small tooltip appears with a simplified explanation.
 
-You need to add your Groq API key in the extension popup for this to work. The key is stored locally in your browser.
+Powered by Gemma 4. Get help without leaving the page.
+
+You'll need a Gemini API key for this. Get one free at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The key stays in your browser. Nothing is tracked.
 
 ## How to Install
 
-1. Download or clone this repository
+1. Download this repository
 2. Open Chrome and go to `chrome://extensions/`
-3. Enable "Developer mode" using the toggle in the top right
+3. Enable "Developer mode" (toggle in top right)
 4. Click "Load unpacked"
-5. Select the `extension/` folder from this project
+5. Select the `extension/` folder
 
 The extension icon appears in your toolbar. Pin it for quick access.
 
-## Setup
+## How to Use
 
-Click the extension icon. You'll see a popup with settings:
+**Apply a reading preset**: Click the extension icon. Choose Mild, Comfort, or Focus. The current page changes instantly.
 
-- **Groq API Key** - Get a free key at [console.groq.com/keys](https://console.groq.com/keys). This is used for the smart highlight tooltip.
-- **Reading Presets** - Choose Mild, Comfort, or Focus to change how the current page looks.
+**Send text to simplify**: Select text. Press Ctrl+Shift+Q (or Cmd+Shift+Q on Mac). The web app opens with your text ready.
 
-Your API key is stored in Chrome's local storage. It never leaves your browser. The extension makes direct API calls from your browser to Groq.
+**Get instant explanations**: Highlight text. Wait 2 seconds. Read the tooltip. Click outside to close it.
+
+**Add your API key**: Click the extension icon. Go to Settings tab. Paste your Gemini API key. Click Save.
+
+That's it.
 
 ## Privacy
 
-This extension doesn't track you. It doesn't collect data. It doesn't send anything to a server except when you explicitly use the smart highlight feature, and even then it only sends the highlighted text to Groq.
+Your reading is private.
 
-The extension has these permissions:
+This extension doesn't track you. It doesn't collect data. It doesn't send anything to a server except when you use the smart highlight tooltip, and even then it only sends the highlighted text you selected.
 
-- `contextMenus` - To add the right-click menu option
-- `activeTab` - To read selected text when you use the context menu
-- `storage` - To save your API key and preferences locally
+Your API key is stored in Chrome's local storage. It never leaves your browser.
 
-That's it. No broad permissions. No background tracking.
+The extension needs these permissions:
+- `contextMenus`: For the right-click menu
+- `activeTab`: To read selected text
+- `storage`: To save your API key locally
 
-## Files
-
-```
-extension/
-├── manifest.json       Extension configuration
-├── popup.html          Settings popup UI
-├── popup.js            Settings popup logic
-├── content.js          Runs on every webpage
-├── content.css         Styles for reading presets
-├── background.js       Handles context menu and shortcuts
-├── groq.js             Groq API client for tooltips
-├── icons/              Extension icons
-└── fonts/              OpenDyslexic font files
-```
-
-## Keyboard Shortcut
-
-Press **Ctrl+Shift+Q** (or **Cmd+Shift+Q** on Mac) to send selected text to QuietText. This works on any page.
-
-You can change this shortcut in Chrome's extension settings if you want.
+No broad permissions. No background tracking. Just help when you ask for it.
 
 ## Troubleshooting
 
-**The context menu doesn't appear**
+**Context menu doesn't appear**: Make sure the extension is enabled in `chrome://extensions/`. Refresh the page.
 
-Make sure the extension is enabled in `chrome://extensions/`. Try refreshing the page.
+**Tooltip doesn't work**: Add your Gemini API key in the extension settings.
 
-**The smart highlight tooltip doesn't work**
+**Font doesn't change**: Some sites override styles. Try Focus mode, which forces the changes.
 
-You need to add your Groq API key in the extension popup. Click the extension icon and paste your key.
+**Text doesn't send to web app**: Check that the web app is accessible. The extension opens `https://quiet-text-2-0-offline.vercel.app` by default.
 
-**The font doesn't change**
+## For Developers
 
-Some websites use CSS that overrides the extension's styles. Try the Focus preset, which uses `!important` rules to force the changes.
+The extension uses vanilla JavaScript. No build step. No dependencies.
 
-**Selected text doesn't send to QuietText**
-
-Make sure the web app is accessible. The extension opens `https://quiettext.vercel.app` by default. If you're running the app locally, you'll need to modify `background.js` to point to `http://localhost:5173`.
-
-## Development
-
-To modify the extension:
-
-1. Edit the files in the `extension/` folder
+To modify:
+1. Edit files in `extension/` folder
 2. Go to `chrome://extensions/`
-3. Click the refresh icon on the QuietText extension card
-4. Reload any open tabs to see the changes
+3. Click refresh on the QuietText card
+4. Reload any open tabs
 
-The extension uses vanilla JavaScript. No build step. No dependencies. Just edit and reload.
+Files:
+- `manifest.json`: Extension config
+- `popup.html/js`: Settings interface
+- `content.js/css`: Runs on every page
+- `background.js`: Context menu and shortcuts
+- `gemini.js`: API client for tooltips
+- `fonts/`: OpenDyslexic font files
 
 ## Author
 

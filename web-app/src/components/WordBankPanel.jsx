@@ -24,7 +24,7 @@ export default function WordBankPanel() {
     const lines = words.map(e =>
       e.word + '\n' + e.definition + '\n' + new Date(e.timestamp).toLocaleDateString() + '\n'
     ).join('\n');
-    const blob = new Blob(['QuietText 2.0 — My Word Bank\n\n' + lines], { type: 'text/plain' });
+    const blob = new Blob(['QuietText 2.0 - My Word Bank\n\n' + lines], { type: 'text/plain' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
@@ -108,38 +108,61 @@ export default function WordBankPanel() {
                 <div
                   key={entry.id}
                   style={{
-                    padding: '12px 14px', borderRadius: 10,
-                    border: '1px solid #E8E6E1', background: '#FAFAF8'
+                    padding: '14px 16px', borderRadius: 10,
+                    border: '1px solid #E8E6E1', 
+                    background: 'linear-gradient(135deg, #fdfbf8 0%, #f9f7f3 100%)',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { 
+                    e.currentTarget.style.borderColor = '#a88f6b'; 
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(168,143,107,0.15)';
+                  }}
+                  onMouseLeave={e => { 
+                    e.currentTarget.style.borderColor = '#E8E6E1'; 
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
+                      {/* Word header with date */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                         <span style={{
-                          fontSize: 15, fontWeight: 600, color: '#1C1C1E',
-                          fontFamily: 'OpenDyslexic, sans-serif'
+                          fontSize: 16, fontWeight: 700, color: '#3d3428',
+                          fontFamily: 'OpenDyslexic, sans-serif',
+                          letterSpacing: '0.02em',
                         }}>
                           {entry.word}
                         </span>
-                        <span style={{ fontSize: 10, color: '#9a9a9f' }}>
+                        <span style={{ fontSize: 10, color: '#9a9a9f', fontFamily: 'system-ui, sans-serif' }}>
                           {new Date(entry.timestamp).toLocaleDateString()}
                         </span>
                       </div>
+                      
+                      {/* Definition below word */}
                       <div style={{
-                        fontSize: 13, color: '#3d3428', lineHeight: 1.7,
-                        fontFamily: 'OpenDyslexic, sans-serif'
+                        fontSize: 13, color: '#1C1C1E', lineHeight: 1.7,
+                        fontFamily: 'OpenDyslexic, sans-serif',
+                        padding: '8px 12px',
+                        background: '#FFFFFF',
+                        borderRadius: 6,
+                        border: '1px solid #E8E6E1',
                       }}>
                         {entry.definition}
                       </div>
                     </div>
+                    
+                    {/* Delete button */}
                     <button
                       onClick={() => handleDelete(entry.id)}
                       title="Remove this word"
                       style={{
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: '#9a9a9f', fontSize: 16, lineHeight: 1,
-                        padding: '2px 4px', flexShrink: 0
+                        color: '#9a9a9f', fontSize: 18, lineHeight: 1,
+                        padding: '2px 6px', flexShrink: 0,
+                        transition: 'color 0.15s',
                       }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#d32f2f'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#9a9a9f'}
                     >
                       ×
                     </button>

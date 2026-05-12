@@ -17,7 +17,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// Flesch score interpretation — shown as legend below chart
+// Flesch score interpretation (shown as legend below chart)
 const FLESCH_LEGEND = [
   { range: '90–100', label: 'Very easy (Grade 5)' },
   { range: '70–90',  label: 'Easy (Grade 6–7)' },
@@ -106,7 +106,7 @@ const MetricsChart = memo(function MetricsChart({ before, after }) {
         <Bar data={data} options={options} />
       </div>
 
-      {/* Metrics grid — 2 columns */}
+      {/* Metrics grid (2 columns) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
         {metrics.map(m => {
           const improved = m.higherBetter ? m.a > m.b : m.a < m.b;
@@ -137,7 +137,7 @@ const MetricsChart = memo(function MetricsChart({ before, after }) {
         })}
       </div>
 
-      {/* Flesch score legend — Fix #22 */}
+      {/* Flesch score legend */}
       <details style={{ fontSize: 11, color: '#6E6E73', fontFamily: 'system-ui, sans-serif' }}>
         <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#6E6E73', userSelect: 'none' }}>
           What does the Readability Score mean?

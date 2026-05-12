@@ -11,6 +11,7 @@ import AssignmentPanel from './components/AssignmentPanel';
 import StudyGuidePanel from './components/StudyGuidePanel';
 import ExamPanel from './components/ExamPanel';
 import WordBankPanel from './components/WordBankPanel';
+import SettingsPanel, { getPrefs } from './components/SettingsPanel';
 import { callAI, PROMPTS, getAIMode } from './lib/ai';
 import { saveToHistory, getHistory, clearHistory } from './lib/storage';
 import { calculateMetrics } from './lib/metricsWrapper';
@@ -23,8 +24,8 @@ const VALID_STYLES    = ['plain', 'bullets', 'steps'];
 export default function App() {
   const [activeView,   setActiveView]   = useState('simplify');
   const [inputText,    setInputText]    = useState('');
-  const [level,        setLevel]        = useState('adult');
-  const [language,     setLanguage]     = useState('English');
+  const [level,        setLevel]        = useState(() => getPrefs().defaultLevel || 'adult');
+  const [language,     setLanguage]     = useState(() => getPrefs().defaultLanguage || 'English');
   const [explainStyle, setExplainStyle] = useState('plain');
   const [model,        setModel]        = useState('');
   const [result,       setResult]       = useState('');
@@ -247,7 +248,7 @@ export default function App() {
       <header style={{ background: 'linear-gradient(135deg, #3d3428 0%, #5a4d3a 100%)', padding: '14px 24px', display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#F2F0EB', letterSpacing: '0.04em', fontFamily: 'system-ui, sans-serif', margin: 0, lineHeight: 1.2 }}>QuietText 2.0</h1>
-          <p style={{ fontSize: 11, color: '#9a9a9f', fontStyle: 'italic', marginTop: 3, fontFamily: 'system-ui, sans-serif' }}>{mode === 'ollama' ? 'Runs fully offline with Ollama · Nothing leaves your machine' : 'Gemma 4 reads your documents · Groq makes them simple'}</p>
+          <p style={{ fontSize: 11, color: '#9a9a9f', fontStyle: 'italic', marginTop: 3, fontFamily: 'system-ui, sans-serif' }}>{mode === 'ollama' ? 'Runs fully offline with Ollama · Nothing leaves your machine' : 'Your AI reading assistant · Powered by Google AI'}</p>
         </div>
       </header>
 
@@ -328,8 +329,8 @@ export default function App() {
 
               {!hasResult && (
                 <div style={{ textAlign: 'center', padding: '16px 20px', color: '#6E6E73', fontFamily: 'system-ui, sans-serif' }}>
-                  <p style={{ fontSize: 16, fontWeight: 600, color: '#1C1C1E', marginBottom: 6 }}>Paste any text above to get started</p>
-                  <p style={{ fontSize: 13, color: '#6E6E73', marginBottom: 4 }}>Articles · Documents · Emails · Anything</p>
+                  <p style={{ fontSize: 16, fontWeight: 600, color: '#1C1C1E', marginBottom: 6 }}>Ready when you are. Paste your text above.</p>
+                  <p style={{ fontSize: 13, color: '#6E6E73', marginBottom: 4 }}>Any text. Any length. Any topic.</p>
                   <p style={{ fontSize: 12, color: '#a88f6b', marginTop: 10 }}>Ctrl+Enter to simplify · Works online and offline</p>
                 </div>
               )}
@@ -473,7 +474,7 @@ export default function App() {
                 )}
               </div>
               {historyEntries.length === 0 ? (
-                <p style={{ fontSize: 14, color: '#6E6E73', fontFamily: 'system-ui, sans-serif' }}>No history yet. Simplify some text first.</p>
+                <p style={{ fontSize: 14, color: '#6E6E73', fontFamily: 'system-ui, sans-serif' }}>Nothing here yet. Start simplifying to build your history.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {historyEntries.map(entry => (
@@ -507,8 +508,10 @@ export default function App() {
 
           {activeView === 'settings' && (
             <section aria-label="Settings" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E6E73', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12, fontFamily: 'system-ui, sans-serif' }}>Settings</div>
-              <p style={{ fontSize: 14, color: '#6E6E73', lineHeight: 1.7, fontFamily: 'system-ui, sans-serif' }}>Model selection, default reading level, default language.</p>
+              <SettingsPanel onPrefsChange={(prefs) => {
+                if (prefs.defaultLevel)    setLevel(prefs.defaultLevel);
+                if (prefs.defaultLanguage) setLanguage(prefs.defaultLanguage);
+              }} />
             </section>
           )}
 
@@ -516,7 +519,7 @@ export default function App() {
       </main>
 
       <footer style={{ borderTop: '1px solid #E8E6E1', padding: '10px 24px 10px 192px', textAlign: 'center', fontSize: 11, color: '#6E6E73', fontFamily: 'system-ui, sans-serif', background: '#FFFFFF' }}>
-        {mode === 'ollama' ? '100% offline · Powered by Ollama · Your data never leaves your device' : 'Gemma 4 reads · Groq simplifies · Keys stay in your browser'}
+        {mode === 'ollama' ? '100% offline · Powered by Ollama · Your data never leaves your device' : 'Gemini 2.5 Flash for text · Gemma 4 for vision · Keys stay in your browser'}
       </footer>
     </div>
   );

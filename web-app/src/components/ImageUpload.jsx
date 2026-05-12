@@ -18,7 +18,7 @@ export default function ImageUpload({ onProcess, loading }) {
       return;
     }
     if (file.size > MAX_BYTES) {
-      setValErr('Image too large — max 20 MB.');
+      setValErr('Image too large - max 20 MB.');
       return;
     }
     const reader = new FileReader();

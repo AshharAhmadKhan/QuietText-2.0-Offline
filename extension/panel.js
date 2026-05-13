@@ -7,8 +7,8 @@ document.getElementById("qt-close").addEventListener("click", () => {
 
 document.getElementById("qt-open-tab").addEventListener("click", () => {
   const url = pendingText
-    ? "https://quiettext.vercel.app/?text=" + encodeURIComponent(pendingText)
-    : "https://quiettext.vercel.app/";
+    ? "https://quiet-text-2-0-offline.vercel.app/?text=" + encodeURIComponent(pendingText)
+    : "https://quiet-text-2-0-offline.vercel.app/";
   window.parent.postMessage({ type: "OPEN_TAB", url }, "*");
 });
 
@@ -24,6 +24,6 @@ window.addEventListener("message", (event) => {
   if (typeof msg !== "object") return;
   if (msg.type === "INIT_PANEL" && msg.text && msg.text.trim()) {
     pendingText = msg.text.trim();
-    iframe.src = "https://quiettext.vercel.app/?text=" + encodeURIComponent(pendingText);
+    iframe.src = "https://quiet-text-2-0-offline.vercel.app/?text=" + encodeURIComponent(pendingText);
   }
 });

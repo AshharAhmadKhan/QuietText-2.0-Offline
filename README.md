@@ -18,7 +18,7 @@ QuietText 2.0 is a complete rebuild. It's a two-part system: a Chrome extension 
 
 QuietText v1 was a Chrome extension. It applied the OpenDyslexic font, adjusted spacing, and simplified text on web pages. It worked, but it had limits. No PDFs. No images. No offline mode. People needed more.
 
-Gemma 4 changed everything. Multimodal vision for reading images and PDFs. 256K context window for processing entire documents without chunking. Runs locally on consumer hardware. I rebuilt QuietText from the ground up.
+Gemma 4 changed everything. Multimodal vision for reading images and PDFs. Up to 256K context window online and 128K offline for processing entire documents without chunking. Runs locally on consumer hardware. I rebuilt QuietText from the ground up.
 
 QuietText 2.0 is accessibility built for people who actually need it. It's free. It's private. It works whether you have internet or not. And it helps anyone who struggles with complex text, whether that's dyslexia, reading in a second language, or just trying to understand dense academic papers.
 
@@ -45,8 +45,9 @@ QuietText leverages three key Gemma 4 capabilities that make offline accessibili
 - Extract text from textbook photos, worksheets, scanned documents
 - Handles complex layouts, tables, and mixed content
 
-**256K Context Window**
-- Process entire 50-page documents in one pass
+**Long Context Window**
+- Online (Gemini API): up to 256K tokens — process entire 50-page documents in one pass
+- Offline (Ollama E2B): 128K tokens — still handles most textbooks and assignments without chunking
 - No chunking = better coherence and context preservation
 - Maintains document structure and relationships
 
@@ -71,7 +72,7 @@ QuietText leverages three key Gemma 4 capabilities that make offline accessibili
 **Performance:**
 - Online: 5-10 seconds for text, 15-20 seconds for PDFs
 - Offline: 20-30 seconds for all processing
-- Supports documents up to 50 pages (256K tokens)
+- Supports documents up to 50 pages (256K tokens online / 128K tokens offline)
 
 **Accessibility:**
 - 7 languages: English, Hindi, Urdu, Bengali, Arabic, Spanish, French
@@ -89,7 +90,7 @@ Reading shouldn't require money, constant internet, or a computer science degree
 
 ## How It Works
 
-Gemma 4 handles images, PDFs, and long documents. Its multimodal capabilities and 256K context window make offline accessibility possible.
+Gemma 4 handles images, PDFs, and long documents. Its multimodal capabilities and long context window make offline accessibility possible.
 
 Gemini 2.5 Flash provides fast text simplification when you're online. Most requests finish in 2-3 seconds.
 
@@ -117,11 +118,16 @@ No installation needed. Open it, paste text, see what it does.
 Install Ollama from [ollama.ai](https://ollama.ai), then:
 
 ```bash
+# Recommended for most machines (low RAM)
 ollama pull gemma4:e2b
+
+# More capable if you have 16GB+ RAM
+# ollama pull gemma4:9b
+
 ollama serve
 ```
 
-Open the web app, switch to Offline mode in settings, and everything runs locally.
+Open the web app, switch to Offline mode in settings. The app detects all your locally pulled Gemma models and lets you pick — everything runs locally.
 
 ## Built For
 

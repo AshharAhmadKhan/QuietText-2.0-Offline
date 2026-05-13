@@ -3,6 +3,7 @@
 
 import { callGemini, checkGemini, GEMINI_MODELS } from "./gemini";
 import { callOllama, checkOllama, PROMPTS }        from "./ollama";
+import { extractTextFromPDF }                        from "./pdfExtract";
 
 export { PROMPTS };
 
@@ -18,6 +19,13 @@ export async function callAI({ system, prompt, images = [], pdf = null, ollamaMo
   // Offline mode — Ollama for everything
   if (mode === "ollama") {
     if (!ollamaModel) throw new Error("No Ollama model selected.");
+    if (pdf) {
+      const blob = new Blob([Uint8Array.from(atob(pdf), c => c.charCodeAt(0))], { type: "application/pdf" });
+      const pdfText = await extractTextFromPDF(blob);
+      if (!pdfText) throw new Error("Could not extract text from PDF. Try a text-based PDF.");
+      const offlinePrompt = prompt + "\n\nPDF CONTENT:\n" + pdfText;
+      return callOllama({ model: ollamaModel, system, prompt: offlinePrompt, images });
+    }
     return callOllama({ model: ollamaModel, system, prompt, images });
   }
 

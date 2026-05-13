@@ -26,3 +26,5 @@ Thumbs.db
 .env.local
 .vercel
 .env*.local
+KAGGLE_VIDEO_SCRIPT.md
+KAGGLE_WRITEUP.md

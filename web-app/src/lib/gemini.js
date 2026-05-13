@@ -1,5 +1,4 @@
 // gemini.js — Gemini API for text, vision, and PDF processing
-// thinkingLevel: "MINIMAL" — only valid values are MINIMAL and HIGH
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
 export const GEMINI_MODELS = {
@@ -59,10 +58,8 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
 
     const data = await res.json();
     const allParts = data?.candidates?.[0]?.content?.parts || [];
-    const answerPart = allParts.find(p => !p.thought) || allParts[0] || {};
+    const answerPart = allParts[0] || {};
     let text = answerPart.text || '';
-    // Strip any leaked thinking tags
-    text = text.replace(/<thought>[\s\S]*?<\/thought>/gi, '').trim();
     if (!text) throw new Error('Empty response from Gemma 4.');
     return text;
 

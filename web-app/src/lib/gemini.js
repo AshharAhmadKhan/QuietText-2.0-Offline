@@ -58,7 +58,7 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
 
     const data = await res.json();
     const allParts = data?.candidates?.[0]?.content?.parts || [];
-    const answerPart = allParts[0] || {};
+    const answerPart = allParts.find(p => p.text) || allParts[0] || {};
     let text = answerPart.text || '';
     if (!text) throw new Error('Empty response from Gemma 4.');
     return text;

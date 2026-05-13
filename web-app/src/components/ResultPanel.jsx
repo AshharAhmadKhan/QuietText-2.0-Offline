@@ -166,6 +166,8 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
 
 function ResultText({ result, onRef, onWordClick, fontFamily = "OpenDyslexic, sans-serif" }) {
   const localRef = useRef(null);
+  const onWordClickRef = useRef(onWordClick);
+  useEffect(() => { onWordClickRef.current = onWordClick; }, [onWordClick]);
 
   useEffect(() => {
     const el = localRef.current;
@@ -188,7 +190,7 @@ function ResultText({ result, onRef, onWordClick, fontFamily = "OpenDyslexic, sa
             span.addEventListener('mouseleave', e => { e.target.style.background = ''; });
             span.addEventListener('click', e => {
               e.stopPropagation();
-              onWordClick(part, e.target.getBoundingClientRect());
+              onWordClickRef.current(part, e.target.getBoundingClientRect());
             });
             frag.appendChild(span);
           } else {

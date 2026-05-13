@@ -83,9 +83,7 @@ export default function App() {
     setShowExam(false);
 
     try {
-      const system = safeLang === 'English'
-        ? PROMPTS.simplify(safeLevel)
-        : PROMPTS.multilingual(safeLang, safeLevel);
+      const system = PROMPTS.simplify(safeLevel, safeLang);
 
       const output = await callAI({ ollamaModel: model, system, prompt: clean, purpose: 'text' });
       setResult(output);
@@ -122,11 +120,11 @@ export default function App() {
 
     try {
       const promptMap = {
-        plain:   PROMPTS.explainPlain,
-        bullets: PROMPTS.explainBullets,
-        steps:   PROMPTS.explainSteps,
+        plain:   PROMPTS.explainPlain(safeLang),
+        bullets: PROMPTS.explainBullets(safeLang),
+        steps:   PROMPTS.explainSteps(safeLang),
       };
-      const system = promptMap[safeStyle] || PROMPTS.explainPlain;
+      const system = promptMap[safeStyle] || PROMPTS.explainPlain(safeLang);
       const labelMap = { plain: 'Explanation', bullets: 'Key Points', steps: 'Step by Step' };
 
       const output = await callAI({ ollamaModel: model, system, prompt: clean, purpose: 'text' });
@@ -157,7 +155,7 @@ export default function App() {
     try {
       const output = await callAI({
         ollamaModel: model,
-        system: PROMPTS.imageSimplify,
+        system: PROMPTS.imageSimplify(language),
         prompt: 'Read all the text in this image and rewrite it in simple language.',
         images: [base64, mimeType],
         purpose: 'text'
@@ -188,9 +186,11 @@ export default function App() {
     setShowExam(false);
 
     try {
+      const system = PROMPTS.simplify(level, language);
+      
       const output = await callAI({
         ollamaModel: model,
-        system: PROMPTS.simplify('adult'),
+        system,
         prompt: 'Read this entire PDF document and rewrite it in simple, clear language. Use short sentences. Keep all important information.',
         pdf: pdfBase64,
         purpose: 'text'
@@ -220,7 +220,7 @@ export default function App() {
 
       const output = await callAI({
         ollamaModel: model,
-        system: PROMPTS.qa(currentDocument),
+        system: PROMPTS.qa(currentDocument, language),
         prompt: historyText + '\n\nStudent: ' + question,
         purpose: 'qa'
       });
@@ -322,12 +322,12 @@ export default function App() {
 
               {showStudyGuide && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} language={language} onClose={() => setShowStudyGuide(false)} />
                 </section>
               )}
               {showExam && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <ExamPanel document={currentDocument} ollamaModel={model} onClose={() => setShowExam(false)} />
+                  <ExamPanel document={currentDocument} ollamaModel={model} language={language} onClose={() => setShowExam(false)} />
                 </section>
               )}
 
@@ -390,12 +390,12 @@ export default function App() {
 
               {showStudyGuide && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} language={language} onClose={() => setShowStudyGuide(false)} />
                 </section>
               )}
               {showExam && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <ExamPanel document={currentDocument} ollamaModel={model} onClose={() => setShowExam(false)} />
+                  <ExamPanel document={currentDocument} ollamaModel={model} language={language} onClose={() => setShowExam(false)} />
                 </section>
               )}
             </>
@@ -444,12 +444,12 @@ export default function App() {
 
               {showStudyGuide && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <StudyGuidePanel document={currentDocument} ollamaModel={model} onClose={() => setShowStudyGuide(false)} />
+                  <StudyGuidePanel document={currentDocument} ollamaModel={model} language={language} onClose={() => setShowStudyGuide(false)} />
                 </section>
               )}
               {showExam && currentDocument && (
                 <section style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <ExamPanel document={currentDocument} ollamaModel={model} onClose={() => setShowExam(false)} />
+                  <ExamPanel document={currentDocument} ollamaModel={model} language={language} onClose={() => setShowExam(false)} />
                 </section>
               )}
             </>
@@ -463,7 +463,7 @@ export default function App() {
 
           {activeView === 'assignment' && (
             <section aria-label="Assignment Decoder" style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #E8E6E1', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-              <AssignmentPanel ollamaModel={model} />
+              <AssignmentPanel ollamaModel={model} language={language} />
             </section>
           )}
 

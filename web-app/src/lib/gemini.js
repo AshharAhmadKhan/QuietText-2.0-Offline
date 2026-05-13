@@ -13,6 +13,7 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
   const url = `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`;
 
   const isPDF = !!pdfBase64;
+  const isImage = !!imageBase64;
   const parts = [];
   if (pdfBase64) {
     parts.push({ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } });
@@ -21,16 +22,14 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
   }
   parts.push({ text: prompt });
 
-  // Only Gemma 4 supports thinkingConfig, not Gemini 2.5 Flash
+  // Configuration for generation
   const generationConfig = {
     temperature: 0.3,
-    maxOutputTokens: isPDF ? 4096 : 1024
+    maxOutputTokens: isPDF ? 4096 : 2048  // Increased from 1024 to 2048 for longer text responses
   };
   
-  // Add thinkingConfig only for Gemma 4 models
-  if (model.includes('gemma')) {
-    generationConfig.thinkingConfig = { thinkingLevel: 'MINIMAL' };
-  }
+  // NOTE: thinkingConfig causes 500 errors with long system prompts on Gemma models
+  // Removed to ensure stability
 
   const body = {
     system_instruction: { parts: [{ text: system }] },
@@ -69,7 +68,11 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
 
   } catch (e) {
     clearTimeout(timer);
-    if (e.name === 'AbortError') throw new Error(isPDF ? 'PDF too large — try under 15 pages.' : 'Gemma 4 timed out. Try a smaller image.');
+    if (e.name === 'AbortError') {
+      if (isPDF) throw new Error('PDF too large — try under 15 pages.');
+      if (isImage) throw new Error('Gemma 4 timed out. Try a smaller image.');
+      throw new Error('Request timed out. Try shorter text or wait a moment.');
+    }
     throw e;
   }
 }

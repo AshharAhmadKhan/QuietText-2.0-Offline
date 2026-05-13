@@ -50,7 +50,7 @@ function parseGuide(text) {
   return result;
 }
 
-export default function StudyGuidePanel({ document: docText, ollamaModel, onClose }) {
+export default function StudyGuidePanel({ document: docText, ollamaModel, language, onClose }) {
   var [guide,   setGuide]   = useState(null);
   var [loading, setLoading] = useState(false);
   var [error,   setError]   = useState("");
@@ -63,7 +63,7 @@ export default function StudyGuidePanel({ document: docText, ollamaModel, onClos
     try {
       var result = await callAI({
         ollamaModel: ollamaModel,
-        system: PROMPTS.studyGuide,
+        system: PROMPTS.studyGuide(language),
         purpose: 'studyGuide',
         prompt: docText.slice(0, 60000),
       });

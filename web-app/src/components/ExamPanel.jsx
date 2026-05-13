@@ -15,7 +15,7 @@ function parseFeedback(text) {
   return result;
 }
 
-export default function ExamPanel({ document: docText, ollamaModel, onClose }) {
+export default function ExamPanel({ document: docText, ollamaModel, language, onClose }) {
   const [questions, setQuestions] = useState([]);
   const [answers,   setAnswers]   = useState({});
   const [feedback,  setFeedback]  = useState({});
@@ -32,7 +32,7 @@ export default function ExamPanel({ document: docText, ollamaModel, onClose }) {
     try {
       const result = await callAI({
         ollamaModel,
-        system: PROMPTS.examQuestions,
+        system: PROMPTS.examQuestions(language),
         purpose: "examQuestions",
         prompt: docText.slice(0, 60000),
       });
@@ -61,7 +61,7 @@ export default function ExamPanel({ document: docText, ollamaModel, onClose }) {
 
       const result = await callAI({
         ollamaModel,
-        system: PROMPTS.checkAnswers(docText, qas),
+        system: PROMPTS.checkAnswers(docText, qas, language),
         purpose: "checkAnswers",
         prompt,
       });

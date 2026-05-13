@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { callAI, PROMPTS } from "../lib/ai";
 
-export default function AssignmentPanel({ ollamaModel }) {
+export default function AssignmentPanel({ ollamaModel, language }) {
   const [input,   setInput]   = useState("");
   const [steps,   setSteps]   = useState([]);
   const [checked, setChecked] = useState({});
@@ -18,7 +18,7 @@ export default function AssignmentPanel({ ollamaModel }) {
     try {
       const result = await callAI({
         ollamaModel,
-        system: PROMPTS.assignment,
+        system: PROMPTS.assignment(language),
         prompt: text,
         purpose: 'assignment'
       });

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { callAI, PROMPTS, getAIMode, getGeminiKey } from '../lib/ai';
 import { saveWord } from '../lib/storage';
 
@@ -529,13 +530,14 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
         </div>
       )}
 
-      {popup && (
+      {popup && createPortal(
         <WordPopup
           word={popup.word}
           anchorRect={popup.rect}
           ollamaModel={ollamaModel}
           onClose={() => setPopup(null)}
-        />
+        />,
+  document.body
       )}
     </div>
   );

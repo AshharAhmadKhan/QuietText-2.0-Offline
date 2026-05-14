@@ -24,9 +24,9 @@ export async function callAI({ system, prompt, images = [], pdf = null, ollamaMo
       const pdfText = await extractTextFromPDF(blob);
       if (!pdfText) throw new Error("Could not extract text from PDF. Try a text-based PDF.");
       const offlinePrompt = prompt + "\n\nPDF CONTENT:\n" + pdfText;
-      return callOllama({ model: ollamaModel, system, prompt: offlinePrompt, images });
+      return callOllama({ model: ollamaModel, system, prompt: offlinePrompt, images: images.length ? [images[0]] : [] });
     }
-    return callOllama({ model: ollamaModel, system, prompt, images });
+    return callOllama({ model: ollamaModel, system, prompt, images: images.length ? [images[0]] : [] });
   }
 
   // PDF → Gemma 4 (256K context, handles text + scanned, no chunking)

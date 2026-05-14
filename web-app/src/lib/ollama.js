@@ -5,7 +5,7 @@ const BASE = 'http://localhost:11434';
 
 // Timeouts
 const CHECK_TIMEOUT_MS  = 3000;
-const CALL_TIMEOUT_MS   = 120000;
+const CALL_TIMEOUT_MS   = 900000;  // 15 min — covers 30-page PDF on CPU-only E2B (~14min worst case)
 
 export async function checkOllama() {
   try {

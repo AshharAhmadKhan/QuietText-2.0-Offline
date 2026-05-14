@@ -37,7 +37,7 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
   };
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), isPDF ? 240000 : 90000);
+  const timer = setTimeout(() => controller.abort(), 900000);  // 15 min universal
 
   try {
     const res = await fetch(url, {

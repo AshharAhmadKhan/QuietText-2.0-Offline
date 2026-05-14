@@ -84,7 +84,7 @@ export async function callOllama({ model, system, prompt, images = [] }) {
   } catch (e) {
     clearTimeout(timer);
     if (e.name === 'AbortError') {
-      throw new Error('Request timed out (>2 min). Try a shorter text or switch to gemma4:9b.');
+      throw new Error('Request timed out (15 min). Your device may need more time — try a smaller model like gemma4:9b or a shorter document.');
     }
     if (e.message.toLowerCase().includes('fetch') || e.message.toLowerCase().includes('network')) {
       throw new Error('Cannot reach Ollama. Is it running? Try: ollama serve');

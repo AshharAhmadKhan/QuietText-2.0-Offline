@@ -1,5 +1,5 @@
 // Routes requests to Gemini (online) or Ollama (offline)
-// Text: Gemini 2.5 Flash | Images/PDFs: Gemma 4 | Offline: Ollama gemma4:e2b
+// Text: Gemini 2.5 Flash | Images/PDFs: Gemma 4 | Offline: Ollama gemma4:latest
 
 import { callGemini, checkGemini, GEMINI_MODELS } from "./gemini";
 import { callOllama, checkOllama, PROMPTS }        from "./ollama";

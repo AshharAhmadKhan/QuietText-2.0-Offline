@@ -58,8 +58,7 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
 
     const data = await res.json();
     const allParts = data?.candidates?.[0]?.content?.parts || [];
-    const answerPart = allParts.find(p => p.text) || allParts[0] || {};
-    let text = answerPart.text || '';
+    let text = allParts.filter(p => p.text).map(p => p.text).join("\n").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
     if (!text) throw new Error('Empty response from Gemma 4.');
     return text;
 
@@ -76,5 +75,6 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
 
 export async function checkGemini(apiKey) {
   if (!apiKey) return { ok: false, error: 'No Gemini API key' };
+  if (!apiKey.startsWith('AIza') || apiKey.length < 30) return { ok: false, error: 'Invalid key format' };
   return { ok: true };
 }

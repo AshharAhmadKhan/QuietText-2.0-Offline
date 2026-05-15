@@ -45,7 +45,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const urlText = params.get('text');
     if (urlText) {
-      setInputText(decodeURIComponent(urlText));
+      setInputText(urlText);
       setActiveView('simplify');
     }
   }, []);

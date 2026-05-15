@@ -23,30 +23,25 @@ export default function AssignmentPanel({ ollamaModel, language }) {
         purpose: 'assignment'
       });
       
-      // Extract the YOUR STEPS section
+      // Try strict parse: YOUR STEPS section with [about X minutes] brackets
+      let stepLines = [];
       const stepsMatch = result.match(/YOUR STEPS?:(.*?)(?:TOTAL TIME:|$)/is);
-      if (!stepsMatch) {
-        throw new Error('Could not find YOUR STEPS section in response');
-      }
-      
-      const stepsText = stepsMatch[1];
-      
-      // Split by time brackets to find individual steps
-      // Pattern: text [about X minutes]
-      const stepMatches = stepsText.matchAll(/([^[\]]+)\[about[^\]]+\]/g);
-      const stepLines = [];
-      let stepNum = 1;
-      
-      for (const match of stepMatches) {
-        const stepText = match[1].trim();
-        if (stepText) {
-          stepLines.push(`${stepNum}. ${stepText}`);
-          stepNum++;
+      if (stepsMatch) {
+        const stepMatches = stepsMatch[1].matchAll(/([^[\]]+)\[about[^\]]+\]/g);
+        let stepNum = 1;
+        for (const match of stepMatches) {
+          const stepText = match[1].trim();
+          if (stepText) { stepLines.push(`${stepNum}. ${stepText}`); stepNum++; }
         }
       }
-      
+      // Fallback: grab any numbered lines from the full response
       if (stepLines.length === 0) {
-        throw new Error('No steps found. Try rephrasing your assignment.');
+        stepLines = result.split('\n').map(l => l.trim())
+          .filter(l => /^[0-9]+[.):]/.test(l))
+          .map((l, i) => `${i + 1}. ${l.replace(/^[0-9]+[.):]+\s*/, '').replace(/\[about[^\]]+\]/, '').trim()}`);
+      }
+      if (stepLines.length === 0) {
+        throw new Error('Could not parse steps. Try rephrasing your assignment.');
       }
       setSteps(stepLines);
     } catch (e) {

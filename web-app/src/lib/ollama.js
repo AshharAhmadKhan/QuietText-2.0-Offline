@@ -60,6 +60,7 @@ export async function callOllama({ model, system, prompt, images = [] }) {
     prompt,
     system,
     stream: false,
+    think: false,
     options: { temperature: 0.3, num_predict: 2048 }
   };
   if (images.length > 0) body.images = images;

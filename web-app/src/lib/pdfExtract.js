@@ -7,15 +7,15 @@ export async function extractTextFromPDF(file, onProgress) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const totalPages = pdf.numPages;
-  let fullText = '';
-
-  for (let i = 1; i <= totalPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items.map(item => item.str).join(' ');
-    fullText += pageText + '\n\n';
-    if (onProgress) onProgress(Math.round((i / totalPages) * 100));
-  }
-
-  return fullText.trim();
+  const pageNums = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const pageTexts = await Promise.all(
+    pageNums.map(async (i) => {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      return content.items.map(item => item.str).join(' ');
+    })
+  );
+  if (onProgress) onProgress(100);
+  return pageTexts.join('\n\n').trim();
 }
+

@@ -5,7 +5,7 @@ let currentPreset = null;
 let panelInjected = false;
 function applyPreset(preset) {
   if (!document.body) return;
-  if (window.location.hostname === "quiettext.vercel.app") return;
+  if (window.location.hostname === "quiet-text-2-0-offline.vercel.app") return;
   document.body.setAttribute('data-qt-active', 'true');
   
   QT_PRESETS.forEach(p => document.body.classList.remove(p));

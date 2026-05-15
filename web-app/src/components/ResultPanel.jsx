@@ -1,3 +1,5 @@
+const COMMON = new Set(['the','and','but','for','not','you','are','was','has','had','his','her','our','its','can','may','will','did','get','got','let','put','set','say','see','use','two','one','all','any','few','how','who','why','what','when','this','that','with','from','they','them','than','then','been','have','were','also','into','more','some','much','just','each','your','their','said','like','time','well','good','make','come','take','give','know','think','look','want','tell','feel','seem','even','most','over','such','here','there','where','which','while','after','before','about','would','could','should','these','those','very','only','back','still','through']);
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { callAI, PROMPTS, getAIMode, getGeminiKey } from '../lib/ai';
@@ -38,9 +40,9 @@ function friendlyError(msg) {
   if (m.includes('timed out') || m.includes('abort'))
     return 'Request timed out. Try shorter text or switch to a smaller model.';
   if (m.includes('model') && m.includes('not found'))
-    return 'Model not found. Run: ollama pull gemma4:e2b';
+    return 'Model not found. Run: ollama pull gemma4:latest';
   if (m.includes('memory') || m.includes('ram'))
-    return 'Not enough RAM. Close other apps and try again, or use gemma4:e2b.';
+    return 'Not enough RAM. Close other apps and try again, or use gemma4:latest.';
   if (m.includes('rate limit'))
     return 'Rate limit hit. Wait 10 seconds and try again.';
   return msg;
@@ -182,7 +184,6 @@ function ResultText({ result, onRef, onWordClick, fontFamily = "OpenDyslexic, sa
         const frag = document.createDocumentFragment();
         const parts = node.textContent.split(/(\b[a-zA-Z]{3,}\b)/g);
         parts.forEach(part => {
-          const COMMON = new Set(['the','and','but','for','not','you','are','was','has','had','his','her','our','its','can','may','will','did','get','got','let','put','set','say','see','use','two','one','all','any','few','how','who','why','what','when','this','that','with','from','they','them','than','then','been','have','were','also','into','more','some','much','just','each','your','their','said','like','time','well','good','make','come','take','give','know','think','look','want','tell','feel','seem','even','most','over','such','here','there','where','which','while','after','before','about','would','could','should','these','those','very','only','back','still','through']);
         if (/^[a-zA-Z]{4,}$/.test(part) && !COMMON.has(part.toLowerCase())) {
             const span = document.createElement('span');
             span.textContent = part;
@@ -245,7 +246,9 @@ export default function ResultPanel({ result, resultLabel, loading, error, think
 
   const getSentences = (text) => {
     if (!text) return [];
-    return text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 3);
+    let norm = text.replace(/(\d+)\.(\d+)/g, '$1DECIMAL$2');
+    norm = norm.replace(/\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|vs|etc|approx|dept|est)\./gi, '$1ABBR');
+    return norm.split(/[.!?]+/).map(s => s.replace(/DECIMAL/g, '.').replace(/ABBR/g, '.').trim()).filter(s => s.length > 3);
   };
 
   const sentences = getSentences(result);

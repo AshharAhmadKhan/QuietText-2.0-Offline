@@ -17,4 +17,4 @@ body.qt-mild img,body.qt-mild video,body.qt-comfort img,body.qt-comfort video,bo
 .qt-tooltip-loading span{width:7px;height:7px;background:#F2F0EB;border-radius:50%;opacity:0.4;animation:qt-dot-bounce 1.2s ease-in-out infinite}
 .qt-tooltip-loading span:nth-child(2){animation-delay:0.2s}
 .qt-tooltip-loading span:nth-child(3){animation-delay:0.4s}
-@keyframes qt-dot-bounce{0%,80%,100%{opacity:0.4;transform:scale(1)}40%{opacity:1;transform:scale(1.3)}}
+@keyframes qt-dot-bounce{0%,80%,100%{opacity:0.4;transform:scale(1)}40%{opacity:1;transform:scale(1.3)}}.qt-toast-out{opacity:0;transform:translateX(-50%) translateY(8px);transition:opacity 0.25s ease,transform 0.25s ease}

@@ -15,7 +15,7 @@ function stripThinking(t) {
     let inThink = false;
     for (const line of lines) {
       const tr = line.trim();
-      if (tr.startsWith("* ") || tr === "*") { inThink = true; continue; }
+      if (tr.startsWith("* ") || tr === "*" || tr.endsWith(".*") || tr.startsWith("Wait,") || tr.startsWith("Wait ") || tr.startsWith("Final check") || tr === "...") { inThink = true; continue; }
       if (inThink && tr === "") continue;
       inThink = false;
       out.push(line);
@@ -59,6 +59,7 @@ function parseGuide(text) {
   for (var i = 0; i < lines.length; i++) {
     var t = lines[i].trim();
     if (t.length === 0) continue;
+    if (t.endsWith(".*") || t.startsWith("Wait,") || t.startsWith("Wait ") || t.startsWith("Final check") || t === "..." || /^\d+\.$/.test(t)) continue;
     var up = t.toUpperCase();
     if (up.indexOf("KEY CONCEPT") !== -1) { current = "concepts"; continue; }
     if (up.indexOf("PRACTICE QUESTION") !== -1) { current = "questions"; continue; }

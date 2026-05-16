@@ -15,7 +15,7 @@ function stripThinking(t) {
     let inThink = false;
     for (const line of lines) {
       const tr = line.trim();
-      if (tr.startsWith("* ") || tr === "*") { inThink = true; continue; }
+      if (tr.startsWith("* ") || tr === "*" || tr.endsWith(".*") || tr.startsWith("Wait,") || tr.startsWith("Wait ") || tr.startsWith("Final check") || tr === "...") { inThink = true; continue; }
       if (inThink && tr === "") continue;
       inThink = false;
       out.push(line);

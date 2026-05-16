@@ -1,5 +1,5 @@
-// Routes requests to Gemini (online) or Ollama (offline)
-// Text: Gemini 2.5 Flash | Images/PDFs: Gemma 4 | Offline: Ollama gemma4:latest
+// Routes requests to Gemma 4 (online) or Ollama (offline)
+// Online: Gemma 4 for everything | Flash fallback on rate limit | Offline: Ollama gemma4:latest
 
 import { callGemini, checkGemini, GEMINI_MODELS } from "./gemini";
 import { callOllama, checkOllama, PROMPTS }        from "./ollama";
@@ -12,7 +12,7 @@ export const setAIMode    = (m) => localStorage.setItem("qt2_ai_mode", m);
 export const getGeminiKey = () => localStorage.getItem("qt2_gemini_key") || "";
 export const saveGeminiKey= (k) => { localStorage.setItem("qt2_gemini_key", k); window.dispatchEvent(new CustomEvent("qt-key-saved", { detail: { key: "gemini", value: k } })); };
 
-const GEMINI_PURPOSES = new Set(["qa", "studyGuide", "assignment", "examQuestions", "checkAnswers"]);
+
 export async function callAI({ system, prompt, images = [], pdf = null, ollamaModel = "", purpose = "text", history = [] }) {
   const mode = getAIMode();
 
@@ -33,42 +33,29 @@ export async function callAI({ system, prompt, images = [], pdf = null, ollamaMo
   if (pdf) {
     const geminiKey = getGeminiKey();
     if (!geminiKey) throw new Error("PDF processing needs a Gemini API key. Add it in Settings.");
-    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt, pdfBase64: pdf });
+    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.GEMMA, system, prompt, pdfBase64: pdf });
   }
 
   // Image → Gemma 4 vision
   if (images.length > 0) {
     const geminiKey = getGeminiKey();
     if (!geminiKey) throw new Error("Image processing needs a Gemini API key. Add it in Settings.");
-    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt, imageBase64: images[0], mimeType: images[1] || null });
+    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.GEMMA, system, prompt, imageBase64: images[0], mimeType: images[1] || null });
   }
 
-  // QA / Study Guide / Assignment → Gemma 4 (stronger reasoning needed)
-  if (GEMINI_PURPOSES.has(purpose)) {
-    const geminiKey = getGeminiKey();
-    if (!geminiKey) throw new Error("Add your Gemini API key in Settings.");
-    return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
-  }
-
-  // Text → Gemini 2.5 Flash (1.78s avg, fast and reliable)
-  // Fallback to Gemma 4 if rate limit hit
+  // All online features → Gemma 4 (primary), Flash fallback on rate limit only
   const geminiKey = getGeminiKey();
-  if (!geminiKey) throw new Error("Add your Gemini API key in Settings for text processing.");
-  
+  if (!geminiKey) throw new Error("Add your Gemini API key in Settings.");
+
   try {
-    return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.PRIMARY, system, prompt });
+    return await callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.GEMMA, system, prompt });
   } catch (error) {
-    // Check if it's a rate limit error
     const errMsg = error.message?.toLowerCase() || '';
     const isRateLimit = errMsg.includes('rate limit') || errMsg.includes('429') || errMsg.includes('quota');
-    
     if (isRateLimit) {
-      // Fallback to Gemma 4 silently
-      console.log('Gemini rate limit hit, falling back to Gemma 4...');
-      return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.VISION, system, prompt });
+      console.log('Gemma 4 rate limit hit, falling back to Flash...');
+      return callGemini({ apiKey: geminiKey, model: GEMINI_MODELS.FLASH, system, prompt });
     }
-    
-    // Re-throw other errors
     throw error;
   }
 }

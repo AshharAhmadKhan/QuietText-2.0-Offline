@@ -4,6 +4,28 @@ import { callAI, PROMPTS } from "../lib/ai";
 function stripMd(t) {
   return t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").trim();
 }
+function stripThinking(t) {
+  if (!t) return t;
+  // Strip <think>...</think> blocks
+  t = t.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  // Strip Gemini bullet-point thinking lines (lines starting with * that are reasoning, not real bullets)
+  if (/^\s*\* /m.test(t)) {
+    const lines = t.split("\n");
+    const out = [];
+    let inThink = false;
+    for (const line of lines) {
+      const tr = line.trim();
+      if (tr.startsWith("* ") || tr === "*") { inThink = true; continue; }
+      if (inThink && tr === "") continue;
+      inThink = false;
+      out.push(line);
+    }
+    const cleaned = out.join("\n").trim();
+    if (cleaned.length > 0) t = cleaned;
+  }
+  return t.trim();
+}
+
 
 function Section({ title, items, color }) {
   return (
@@ -67,7 +89,7 @@ export default function StudyGuidePanel({ document: docText, ollamaModel, langua
         purpose: 'studyGuide',
         prompt: docText.slice(0, 60000),
       });
-      setGuide(parseGuide(result));
+      setGuide(parseGuide(stripThinking(result)));
     } catch(e) {
       setError(e.message);
     } finally {

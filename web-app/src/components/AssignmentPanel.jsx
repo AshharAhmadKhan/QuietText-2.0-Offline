@@ -1,5 +1,26 @@
 import { useState } from "react";
 import { callAI, PROMPTS } from "../lib/ai";
+function stripThinking(t) {
+  if (!t) return t;
+  // Strip <think>...</think> blocks
+  t = t.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  // Strip Gemini bullet-point thinking lines (lines starting with * that are reasoning, not real bullets)
+  if (/^\s*\* /m.test(t)) {
+    const lines = t.split("\n");
+    const out = [];
+    let inThink = false;
+    for (const line of lines) {
+      const tr = line.trim();
+      if (tr.startsWith("* ") || tr === "*") { inThink = true; continue; }
+      if (inThink && tr === "") continue;
+      inThink = false;
+      out.push(line);
+    }
+    const cleaned = out.join("\n").trim();
+    if (cleaned.length > 0) t = cleaned;
+  }
+  return t.trim();
+}
 
 export default function AssignmentPanel({ ollamaModel, language }) {
   const [input,   setInput]   = useState("");
@@ -25,7 +46,8 @@ export default function AssignmentPanel({ ollamaModel, language }) {
       
       // Try strict parse: YOUR STEPS section with [about X minutes] brackets
       let stepLines = [];
-      const stepsMatch = result.match(/YOUR STEPS?:(.*?)(?:TOTAL TIME:|$)/is);
+      const cleanResult = stripThinking(result);
+      const stepsMatch = cleanResult.match(/YOUR STEPS?:(.*?)(?:TOTAL TIME:|$)/is);
       if (stepsMatch) {
         const stepMatches = stepsMatch[1].matchAll(/([^[\]]+)\[about[^\]]+\]/g);
         let stepNum = 1;
@@ -36,7 +58,7 @@ export default function AssignmentPanel({ ollamaModel, language }) {
       }
       // Fallback: grab any numbered lines from the full response
       if (stepLines.length === 0) {
-        stepLines = result.split('\n').map(l => l.trim())
+        stepLines = cleanResult.split('\n').map(l => l.trim())
           .filter(l => /^[0-9]+[.):]/.test(l))
           .map((l, i) => `${i + 1}. ${l.replace(/^[0-9]+[.):]+\s*/, '').replace(/\[about[^\]]+\]/, '').trim()}`);
       }

@@ -4,6 +4,27 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { callAI, PROMPTS, getAIMode, getGeminiKey } from '../lib/ai';
 import { saveWord } from '../lib/storage';
+function stripThinking(t) {
+  if (!t) return t;
+  // Strip <think>...</think> blocks
+  t = t.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  // Strip Gemini bullet-point thinking lines (lines starting with * that are reasoning, not real bullets)
+  if (/^\s*\* /m.test(t)) {
+    const lines = t.split("\n");
+    const out = [];
+    let inThink = false;
+    for (const line of lines) {
+      const tr = line.trim();
+      if (tr.startsWith("* ") || tr === "*") { inThink = true; continue; }
+      if (inThink && tr === "") continue;
+      inThink = false;
+      out.push(line);
+    }
+    const cleaned = out.join("\n").trim();
+    if (cleaned.length > 0) t = cleaned;
+  }
+  return t.trim();
+}
 
 function getFontForLanguage(language) {
   const scriptFonts = {
@@ -63,7 +84,7 @@ function WordPopup({ word, anchorRect, onClose, ollamaModel }) {
           system: PROMPTS.define(word),
           prompt: word,
         });
-        setDef(result);
+        setDef(stripThinking(result));
       } catch (e) {
         setError('Could not define this word.');
       } finally {

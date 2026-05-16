@@ -99,7 +99,7 @@ You don't want to use online APIs. You don't have reliable internet. You want co
 Install Ollama from [ollama.ai](https://ollama.ai), then:
 
 ```bash
-ollama pull gemma4:e2b
+ollama pull gemma4:e4b
 ollama serve
 ```
 

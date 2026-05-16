@@ -2,7 +2,7 @@
 
 > **Built for the [Gemma 4 Good Hackathon](https://kaggle.com/competitions/gemma-4-good-hackathon)**  
 > **Track:** Digital Equity & Inclusivity | **Special Prize:** Ollama  
-> **Live Demo:** [quiet-text-2-0-offline.vercel.app](https://quiet-text-2-0-offline.vercel.app) | **Video:** [YouTube](link)
+> **Live Demo:** [quiet-text-2-0-offline.vercel.app](https://quiet-text-2-0-offline.vercel.app) | **Video:** [YouTube](https://youtu.be/jPGO-Q8vKas)
 
 ---
 
@@ -58,9 +58,9 @@ QuietText leverages three key Gemma 4 capabilities that make offline accessibili
 - Privacy by default
 
 **Hybrid Architecture:**
-- **Online mode:** Gemini 2.5 Flash for text simplification only; Gemma 4 for PDFs, images, Q&A, study tools, and assignments
-- **Offline mode:** Gemma 4 E2B via Ollama for everything
-- Automatic fallback between modes
+- **Online mode:** Gemma 4 for everything — text, PDFs, images, Q&A, study tools, assignments, and multilingual output
+- **Offline mode:** Gemma 4 via Ollama for everything — nothing leaves your device
+- **Silent safety net:** Gemini Flash activates automatically if Gemma 4 is under load, so dyslexic users never see a failure or wait longer than they should. Most users will never know it exists.
 
 ## Impact Metrics
 
@@ -92,7 +92,7 @@ Reading shouldn't require money, constant internet, or a computer science degree
 
 Gemma 4 handles images, PDFs, and long documents. Its multimodal capabilities and long context window make offline accessibility possible.
 
-Gemini 2.5 Flash provides fast text simplification when you're online. Most requests finish in 2-3 seconds.
+Gemma 4 handles everything online — text, PDFs, images, and all learning tools. If Gemma 4 is ever under high demand, Gemini Flash steps in silently as a safety net. Dyslexic users should never see a failure message or an empty screen. That is not acceptable. So we made sure they never do.
 
 Ollama runs Gemma 4 locally on your machine for complete offline operation. Nothing sent to the cloud.
 
@@ -119,7 +119,7 @@ Install Ollama from [ollama.ai](https://ollama.ai), then:
 
 ```bash
 # Recommended for most machines (low RAM)
-ollama pull gemma4:e2b
+ollama pull gemma4:e4b
 
 # More capable if you have 16GB+ RAM
 # ollama pull gemma4:9b

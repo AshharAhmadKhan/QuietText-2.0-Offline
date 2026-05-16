@@ -2,8 +2,8 @@
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
 export const GEMINI_MODELS = {
-  PRIMARY: 'gemini-2.5-flash',      // Fast text processing (1.78s avg)
-  VISION:  'gemma-4-26b-a4b-it',    // Vision + long context
+  GEMMA: 'gemma-4-26b-a4b-it',    // Primary — all features (text, vision, PDF, long context)
+  FLASH: 'gemini-2.5-flash',       // Fallback only — used if Gemma 4 hits rate limit
 };
 
 export async function callGemini({ apiKey, model, system, prompt, imageBase64 = null, mimeType = null, pdfBase64 = null }) {
@@ -51,14 +51,83 @@ export async function callGemini({ apiKey, model, system, prompt, imageBase64 = 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       const msg = err?.error?.message || `API error ${res.status}`;
-      if (res.status === 429) throw new Error('Gemma 4 rate limit hit. Wait a moment.');
+      if (res.status === 429) throw new Error('rate limit');
       if (res.status === 403) throw new Error('Gemini API key rejected.');
+      // Retry once on transient 500/503 errors (Gemma 4 intermittent failures)
+      if (res.status === 500 || res.status === 503) {
+        await new Promise(r => setTimeout(r, 2000));
+        const retry = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        if (!retry.ok) {
+          const retryErr = await retry.json().catch(() => ({}));
+          throw new Error(retryErr?.error?.message || `API error ${retry.status}`);
+        }
+        const retryData = await retry.json();
+        const retryAllParts = retryData?.candidates?.[0]?.content?.parts || [];
+        let retryRaw = retryAllParts.filter(p => p.text && !p.thought).map(p => p.text).join("\n");
+        if (!retryRaw.trim()) retryRaw = retryAllParts.filter(p => p.text).map(p => p.text).join("\n");
+        if (!retryRaw.trim()) throw new Error('Empty response from Gemma 4.');
+        clearTimeout(timer);
+        return retryRaw.trim();
+      }
       throw new Error(msg);
     }
 
     const data = await res.json();
     const allParts = data?.candidates?.[0]?.content?.parts || [];
-    let text = allParts.filter(p => p.text).map(p => p.text).join("\n").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    // Filter out thought parts (thinking) — only keep actual answer parts
+    let rawText = allParts.filter(p => p.text && !p.thought).map(p => p.text).join("\n");
+    // Fallback: if filtering removed everything, take all text parts (older API versions)
+    if (!rawText.trim()) rawText = allParts.filter(p => p.text).map(p => p.text).join("\n");
+    // Strip <think>...</think> blocks (Ollama-style thinking)
+    rawText = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "");
+    // Strip Gemini 2.5 Flash thinking: lines that are bullet-point reasoning
+    // Thinking lines look like: "* some reasoning text *" or "* text" at start
+    // The real answer always comes after all the thinking blocks
+    // Strategy: if the response contains "* " thinking patterns, extract only the final answer
+    // Extract final answer — Gemma4/Gemini thinking always ends with the clean answer
+    // after all reasoning. We grab the last non-empty paragraph/block.
+    let text = rawText.trim();
+    // Strategy 1: bullet-point thinking (* lines) — strip them
+    if (/^\s*\* /m.test(text)) {
+      const lines = text.split("\n");
+      const answerLines = [];
+      let inThink = false;
+      for (const line of lines) {
+        const tr = line.trim();
+        if (tr.startsWith("* ") || tr === "*") { inThink = true; continue; }
+        if (inThink && tr === "") continue;
+        inThink = false;
+        if (tr) answerLines.push(tr);
+      }
+      if (answerLines.length > 0) text = answerLines.join("\n").trim();
+    }
+    // Strategy 2: prose thinking (Wait,/Let's/Draft:/Final:/Revised:)
+    // Only trigger if response looks like a thinking dump:
+    // must be very long AND contain multiple "Wait," occurrences (Gemma4 thinking pattern)
+    const waitCount = (text.match(/\bWait[,. ]/g) || []).length;
+    if (waitCount >= 3 && text.length > 800) {
+      // Find the last "Final" or "Final version:" marker and take everything after it
+      const finalMatch = text.match(/(?:Final[^\n]*:\s*|Final version:\s*)([^\n].+?)$/is);
+      if (finalMatch && finalMatch[1].trim().length > 10) {
+        text = finalMatch[1].trim();
+      } else {
+        // Fallback: take the last non-empty line that is a complete sentence
+        const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+        for (let i = lines.length - 1; i >= 0; i--) {
+          const l = lines[i];
+          if (l.length > 20 && /[.?!]$/.test(l) && !/^(Wait|Let|Draft|Final|Revised|Check|Actually|Okay|Hmm)/i.test(l)) {
+            text = l;
+            break;
+          }
+        }
+      }
+    }
+    text = text.trim();
     if (!text) throw new Error('Empty response from Gemma 4.');
     return text;
 

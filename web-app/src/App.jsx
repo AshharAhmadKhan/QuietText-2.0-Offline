@@ -529,7 +529,7 @@ export default function App() {
       </main>
 
       <footer style={{ borderTop: '1px solid #E8E6E1', padding: '10px 24px 10px 192px', textAlign: 'center', fontSize: 11, color: '#6E6E73', fontFamily: 'system-ui, sans-serif', background: '#FFFFFF' }}>
-        {mode === 'ollama' ? '100% offline · Powered by Ollama · Your data never leaves your device' : 'Gemini 2.5 Flash for text · Gemma 4 for vision · Keys stay in your browser'}
+        {mode === 'ollama' ? '100% offline · Powered by Ollama · Your data never leaves your device' : 'Gemma 4 for everything · Keys stay in your browser'}
       </footer>
     </div>
   );

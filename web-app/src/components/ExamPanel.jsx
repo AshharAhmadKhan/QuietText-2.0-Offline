@@ -58,7 +58,7 @@ export default function ExamPanel({ document: docText, ollamaModel, language, on
         purpose: "examQuestions",
         prompt: docText.slice(0, 60000),
       });
-      const lines = stripThinking(result).split("\n").map(l => l.trim()).filter(l => /^[0-9]+[.):]/.test(l));
+      const lines = stripThinking(result).split("\n").map(l => l.trim()).filter(l => /^[0-9]+[.):]/.test(l)).slice(0, 5);
       setQuestions(lines);
     } catch (e) {
       setError(e.message);
